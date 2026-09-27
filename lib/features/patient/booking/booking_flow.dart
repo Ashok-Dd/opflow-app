@@ -130,7 +130,7 @@ class _BookingFlowState extends ConsumerState<BookingFlow> {
   Widget build(BuildContext context) {
     final store = ref.watch(patientProvider);
 
-    if (_result == _Result.success) return _SuccessView(booking: _booking!);
+    if (_result == _Result.success) return BookingSuccessView(booking: _booking!);
     if (d.bookingsPaused && _result == _Result.none) {
       return OpPage(
         title: 'Book {0}'.trf([d.name]),
@@ -537,8 +537,8 @@ class _FailedViewState extends State<_FailedView> {
   }
 }
 
-class _SuccessView extends StatelessWidget {
-  const _SuccessView({required this.booking});
+class BookingSuccessView extends StatelessWidget {
+  const BookingSuccessView({super.key, required this.booking});
 
   final Booking booking;
 

@@ -17,6 +17,7 @@ import '../features/doctor/me.dart';
 import '../features/doctor/timings.dart';
 import '../features/doctor/today.dart';
 import '../features/patient/booking/booking_flow.dart';
+import '../features/patient/booking/pay_return.dart';
 import '../features/patient/booking/change_time.dart';
 import '../features/patient/bookings/booking_detail.dart';
 import '../features/patient/bookings/bookings.dart';
@@ -147,6 +148,12 @@ final appRouter = GoRouter(
           () => BookingFlow(doctorId: d!.id, hospitalId: h != null && d.hospitalIds.contains(h) ? h : null));
     }),
     _r('/booking/:id', (s) => BookingDetailScreen(bookingId: s.pathParameters['id']!)),
+    _r('/pay-return', (s) {
+      final b = s.uri.queryParameters['b'] ?? '';
+      // Only a real booking id; anything else is a broken link (never waits for the doctor list).
+      if (!RegExp(r'^[0-9a-f-]{36}$').hasMatch(b)) return const NotFoundScreen(what: 'payment');
+      return PayReturnScreen(bookingId: b, checkoutSaidPaid: s.uri.queryParameters['ok'] == '1');
+    }),
     _r('/booking/:id/change', (s) => ChangeTimeScreen(bookingId: s.pathParameters['id']!)),
     _r('/me/details', (s) => const MyDetailsScreen()),
     _r('/me/payments', (s) => const PaymentsScreen()),

@@ -288,7 +288,7 @@ class ApiPatientStore extends PatientStore {
     final bookingId = (hold['booking'] as Map)['id'] as String;
     CheckoutResult? paid;
     try {
-      paid = await payOrder(payment, description: description, fail: fail, phone: _phone);
+      paid = await payOrder(payment, description: description, fail: fail, phone: _phone, bookingId: bookingId);
     } on ApiException {
       // Checkout said failed / cancelled / too long. That is not proof: UPI apps and weak signal can report a
       // failure after the money was taken. The server (and through it Razorpay) decides, below.
@@ -306,6 +306,11 @@ class ApiPatientStore extends PatientStore {
     }
     return _settle(bookingId, doctorId, checkoutSucceeded: paid != null);
   }
+
+  /// Back from Razorpay's bank page (the web version): the server decides, exactly as after the phone's Checkout.
+  @override
+  Future<Booking?> settleReturned(String bookingId, {required bool checkoutSaidPaid}) =>
+      _settle(bookingId, '', checkoutSucceeded: checkoutSaidPaid);
 
   /// Asks the server "was I charged?" a few times (Razorpay's own message can take a few seconds).
   /// Booked → the booking. Clearly not paid → null ("payment did not go through"). Still unknown (no internet)
@@ -335,7 +340,7 @@ class ApiPatientStore extends PatientStore {
 
   Booking _booked(Booking b, String doctorId) {
     _upsert(b);
-    Remote.instance.forgetDoctor(doctorId);
+    Remote.instance.forgetDoctor(doctorId.isEmpty ? b.doctorId : doctorId);
     unawaited(_loadMessages().then((_) => notifyListeners()).catchError((_) {}));
     notifyListeners();
     return b;

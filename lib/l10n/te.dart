@@ -934,4 +934,8 @@ const te = <String, String>{
   'Change your password?': 'మీ పాస్‌వర్డ్ మార్చాలా?',
   'Your other phones and browsers will be logged out. Use the new password there.': 'మీ ఇతర ఫోన్లు, బ్రౌజర్ల నుంచి లాగ్ అవుట్ అవుతుంది. అక్కడ కొత్త పాస్‌వర్డ్ వాడండి.',
   'The payment window could not open. Please check your internet and try again.': 'పేమెంట్ విండో తెరుచుకోలేదు. ఇంటర్నెట్ చూసి మళ్లీ ప్రయత్నించండి.',
+  'Still confirming your payment': 'మీ పేమెంట్‌ను ఇంకా నిర్ధారిస్తున్నాం',
+  'No money was taken. Your place is kept for a few minutes: open My bookings to pay again.': 'డబ్బు తీసుకోలేదు. మీ స్థానం కొన్ని నిమిషాలు ఉంచుతాం: మళ్లీ చెల్లించడానికి నా బుకింగ్‌లు తెరవండి.',
+  'Please check My bookings in a minute. If money was taken and there is no booking, it comes back automatically.': 'ఒక నిమిషంలో నా బుకింగ్‌లు చూడండి. డబ్బు తీసుకుని బుకింగ్ లేకపోతే, అది ఆటోమేటిక్‌గా తిరిగి వస్తుంది.',
+  'Check again': 'మళ్లీ చూడండి',
 };

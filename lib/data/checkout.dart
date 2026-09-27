@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 import 'api.dart';
+import 'config.dart';
 import 'web_pay_stub.dart' if (dart.library.js_interop) 'web_pay.dart';
 
 /// What Razorpay Checkout returns after a payment: sent to the server, which checks it with Razorpay.
@@ -14,7 +15,10 @@ typedef CheckoutResult = Map<String, String>;
 /// - The server says `fake: true` (a local server without Razorpay keys): its stand-in Checkout is used, and
 ///   [fail] makes the payment fail (the demo "make it fail" switch).
 /// - Otherwise the real Razorpay Checkout opens (UPI, cards, net banking) on the phone.
-Future<CheckoutResult> payOrder(Map<String, dynamic> payment, {required String description, bool fail = false, String? phone}) async {
+/// OPflow's logo in Razorpay's window (without it Razorpay shows the letter "O").
+const _logo = 'https://opflow-alpha.vercel.app/icons/Icon-192.png';
+
+Future<CheckoutResult> payOrder(Map<String, dynamic> payment, {required String description, bool fail = false, String? phone, String? bookingId}) async {
   if (payment['fake'] == true) {
     final r = await Api.instance.post('/v1/dev/razorpay/pay', {'orderId': payment['orderId'], 'fail': fail}, false);
     return Map<String, String>.from((r as Map).map((k, v) => MapEntry('$k', '$v')));
@@ -22,6 +26,9 @@ Future<CheckoutResult> payOrder(Map<String, dynamic> payment, {required String d
   if (kIsWeb) {
     // The web version (iPhone users in Safari): Razorpay's web Checkout, same order and server check.
     try {
+      // Redirect mode: the bank / UPI page opens in this same tab (pop-up windows are blocked on iPhones and
+      // often come up blank), then the server's return address brings the person back to /pay-return.
+      final back = '${Uri.base.origin}${Uri.base.path}'.replaceAll(RegExp(r'/$'), '');
       return await payInBrowser({
         'key': payment['keyId'],
         'order_id': payment['orderId'],
@@ -29,8 +36,13 @@ Future<CheckoutResult> payOrder(Map<String, dynamic> payment, {required String d
         'currency': 'INR',
         'name': 'OPflow',
         'description': description,
+        'image': '${Uri.base.origin}/icons/Icon-192.png',
         'prefill': {'contact': ?phone},
         'theme': {'color': '#1F7A5C'},
+        if (bookingId != null) ...{
+          'redirect': true,
+          'callback_url': '${AppConfig.apiBase}/v1/payments/return?b=$bookingId&to=${Uri.encodeComponent(back)}',
+        },
       }).timeout(const Duration(minutes: 12));
     } on WebPayClosed {
       throw ApiException('PAYMENT_CANCELLED', 'Payment was not finished. No money was taken. Your place is kept for a few minutes.');
@@ -62,6 +74,7 @@ Future<CheckoutResult> payOrder(Map<String, dynamic> payment, {required String d
       'currency': 'INR',
       'name': 'OPflow',
       'description': description,
+      'image': _logo,
       'prefill': {'contact': ?phone},
       'theme': {'color': '#1F7A5C'},
     });

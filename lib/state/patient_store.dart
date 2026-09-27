@@ -120,6 +120,9 @@ class PatientStore extends ChangeNotifier {
   // ---------------------------------------------------------------------------
   // Booking and paying
 
+  /// The web version after Razorpay's bank page (redirect mode). Demo mode never redirects.
+  Future<Booking?> settleReturned(String bookingId, {required bool checkoutSaidPaid}) async => null;
+
   /// Fake payment. [fail] lets the UI show the failed screen.
   Future<Booking?> payAndBook({
     required Doctor doctor,
