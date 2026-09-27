@@ -21,7 +21,7 @@ if /i "%WHAT%"=="apk" goto apk
 echo.
 echo === 1. Building the web version ===
 rem The live server (Render). iPhone users use this web version: https://opflow-alpha.vercel.app
-call flutter build web --release --dart-define=BACKEND=api --dart-define=API_BASE_URL=https://opflow-backend.onrender.com
+call flutter build web --release --pwa-strategy=none --dart-define=BACKEND=api --dart-define=API_BASE_URL=https://opflow-backend.onrender.com
 if errorlevel 1 goto failed
 
 rem Vercel remembers the project in build\web\.vercel, which a rebuild can remove.
