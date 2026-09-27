@@ -933,4 +933,5 @@ const te = <String, String>{
   'Yes, change fee': 'అవును, ఫీజు మార్చండి',
   'Change your password?': 'మీ పాస్‌వర్డ్ మార్చాలా?',
   'Your other phones and browsers will be logged out. Use the new password there.': 'మీ ఇతర ఫోన్లు, బ్రౌజర్ల నుంచి లాగ్ అవుట్ అవుతుంది. అక్కడ కొత్త పాస్‌వర్డ్ వాడండి.',
+  'The payment window could not open. Please check your internet and try again.': 'పేమెంట్ విండో తెరుచుకోలేదు. ఇంటర్నెట్ చూసి మళ్లీ ప్రయత్నించండి.',
 };

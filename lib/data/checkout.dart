@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 import 'api.dart';
+import 'web_pay_stub.dart' if (dart.library.js_interop) 'web_pay.dart';
 
 /// What Razorpay Checkout returns after a payment: sent to the server, which checks it with Razorpay.
 typedef CheckoutResult = Map<String, String>;
@@ -19,7 +20,25 @@ Future<CheckoutResult> payOrder(Map<String, dynamic> payment, {required String d
     return Map<String, String>.from((r as Map).map((k, v) => MapEntry('$k', '$v')));
   }
   if (kIsWeb) {
-    throw ApiException('PAY_IN_APP', 'Please pay in the OPflow app on your phone.');
+    // The web version (iPhone users in Safari): Razorpay's web Checkout, same order and server check.
+    try {
+      return await payInBrowser({
+        'key': payment['keyId'],
+        'order_id': payment['orderId'],
+        'amount': (payment['amount'] as Map)['paise'],
+        'currency': 'INR',
+        'name': 'OPflow',
+        'description': description,
+        'prefill': {'contact': ?phone},
+        'theme': {'color': '#1F7A5C'},
+      }).timeout(const Duration(minutes: 12));
+    } on WebPayClosed {
+      throw ApiException('PAYMENT_CANCELLED', 'Payment was not finished. No money was taken. Your place is kept for a few minutes.');
+    } on WebPayUnavailable {
+      throw ApiException('PAYMENT_UNAVAILABLE', 'The payment window could not open. Please check your internet and try again.', retryable: true);
+    } on TimeoutException {
+      throw ApiException('PAYMENT_TIMEOUT', 'Payment took too long. If money was taken, it will come back automatically.');
+    }
   }
   final done = Completer<CheckoutResult>();
   final rp = Razorpay();
