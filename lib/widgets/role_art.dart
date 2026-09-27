@@ -16,13 +16,21 @@ class RoleArt extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Image.asset(
-      doctor ? 'assets/roles/doctor.png' : 'assets/roles/patient.png',
-      fit: BoxFit.cover,
-      width: double.infinity,
-      height: double.infinity,
-      filterQuality: FilterQuality.medium,
-      errorBuilder: (_, _, _) => CustomPaint(painter: doctor ? _DoctorPainter(t) : _PatientPainter(t), size: Size.infinite),
+    // The pictures have see-through backgrounds: shown whole on a soft mint panel.
+    return ColoredBox(
+      color: doctor ? OpColors.mint : const Color(0xFFE6F1EA),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(10, 12, 10, 0),
+        child: Image.asset(
+          doctor ? 'assets/roles/doctor.png' : 'assets/roles/patient.png',
+          fit: BoxFit.contain,
+          alignment: Alignment.bottomCenter,
+          width: double.infinity,
+          height: double.infinity,
+          filterQuality: FilterQuality.medium,
+          errorBuilder: (_, _, _) => CustomPaint(painter: doctor ? _DoctorPainter(t) : _PatientPainter(t), size: Size.infinite),
+        ),
+      ),
     );
   }
 }
