@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The OPflow "OP" mark (same shapes as lib/widgets/op_mark.dart), for the screen shown while the app starts. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="112dp" android:height="112dp" android:viewportWidth="100" android:viewportHeight="100">
+    <path android:strokeColor="#1F7A5C" android:strokeWidth="11" android:strokeLineCap="round"
+        android:pathData="M8.5,50 a21.5,21.5 0 1,0 43,0 a21.5,21.5 0 1,0 -43,0" />
+    <path android:strokeColor="#1F7A5C" android:strokeWidth="11" android:strokeLineCap="round"
+        android:pathData="M64,28.5 L64,80" />
+    <path android:strokeColor="#1F7A5C" android:strokeWidth="11" android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:pathData="M64,28.5 L74,28.5 A13.5,13.5 0 0,1 74,55.5 L64,55.5" />
+    <path android:strokeColor="#1A6F52" android:strokeWidth="4.2" android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:pathData="M14.95,50 L23.55,50 L26.35,54.73 L29.79,39.25 L33.44,59.46 L36.45,50 L45.05,50" />
+</vector>

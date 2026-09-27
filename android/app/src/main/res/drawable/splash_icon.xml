@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12+ system splash icon: the OP mark at 112dp (the size the app's own splash draws it) in the middle of a 288dp canvas. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="288dp" android:height="288dp" android:viewportWidth="300" android:viewportHeight="300">
+  <group android:translateX="91.67" android:translateY="91.67" android:scaleX="1.1667" android:scaleY="1.1667">
+    <path android:strokeColor="#1F7A5C" android:strokeWidth="11" android:strokeLineCap="round"
+        android:pathData="M8.5,50 a21.5,21.5 0 1,0 43,0 a21.5,21.5 0 1,0 -43,0" />
+    <path android:strokeColor="#1F7A5C" android:strokeWidth="11" android:strokeLineCap="round"
+        android:pathData="M64,28.5 L64,80" />
+    <path android:strokeColor="#1F7A5C" android:strokeWidth="11" android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:pathData="M64,28.5 L74,28.5 A13.5,13.5 0 0,1 74,55.5 L64,55.5" />
+    <path android:strokeColor="#1A6F52" android:strokeWidth="4.2" android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:pathData="M14.95,50 L23.55,50 L26.35,54.73 L29.79,39.25 L33.44,59.46 L36.45,50 L45.05,50" />
+  </group>
+</vector>

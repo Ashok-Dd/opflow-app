@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- OPflow paper colour, same as the app and website background -->
+    <color name="paper">#F4F1E8</color>
+    <!-- Forest green: the tint of push notifications -->
+    <color name="opflow_forest">#1F7A5C</color>
+</resources>
