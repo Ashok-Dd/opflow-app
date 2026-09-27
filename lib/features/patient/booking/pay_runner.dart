@@ -9,7 +9,7 @@ import '../../../widgets/op_loader.dart';
 /// What happened to a payment, as the screens show it.
 enum PayOutcome { booked, notPaid, problem }
 
-/// Runs a payment behind the OP loader. The Razorpay screen can stay open for many minutes (UPI apps), so there
+/// Runs a payment behind the OP loader. The Cashfree screen can stay open for many minutes (UPI apps), so there
 /// is no short time limit. Only a clear "not paid" from the server means [PayOutcome.notPaid]; any other
 /// problem (time just got full, no internet, still confirming) is shown as a red note and the screen stays.
 Future<(PayOutcome, Booking?)> runPayment(BuildContext context, Future<Booking?> Function() pay) async {

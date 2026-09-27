@@ -18,7 +18,7 @@ With a local server (`APP_ENV=local`), the stand-ins are used:
 - **Patient login:** any phone number and any 6-digit code (Firebase is not set up yet).
 - **Payment:** the app's payment sheet ("make it fail" works too) uses the server's stand-in Checkout.
 
-Real Razorpay Checkout opens automatically once the server has Razorpay keys.
+The real Cashfree checkout opens automatically once the server has Cashfree keys.
 Demo doctor (after `npm run seed:demo` in `backend/`): **OPD-10234 / demo1234**, which asks for a new password.
 
 ## How it connects (screens unchanged)

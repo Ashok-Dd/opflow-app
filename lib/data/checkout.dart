@@ -1,88 +1,73 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:flutter_cashfree_pg_sdk/api/cferrorresponse/cferrorresponse.dart';
+import 'package:flutter_cashfree_pg_sdk/api/cfpayment/cfwebcheckoutpayment.dart';
+import 'package:flutter_cashfree_pg_sdk/api/cfpaymentgateway/cfpaymentgatewayservice.dart';
+import 'package:flutter_cashfree_pg_sdk/api/cfsession/cfsession.dart';
+import 'package:flutter_cashfree_pg_sdk/utils/cfenums.dart';
 
 import 'api.dart';
-import 'config.dart';
 import 'web_pay_stub.dart' if (dart.library.js_interop) 'web_pay.dart';
 
-/// What Razorpay Checkout returns after a payment: sent to the server, which checks it with Razorpay.
+/// Which order the checkout was for. Only the order id goes to the server: the server asks Cashfree itself
+/// whether it was paid (nothing from the phone is trusted).
 typedef CheckoutResult = Map<String, String>;
 
-/// Pays one order.
+/// Pays one order on Cashfree.
 ///
-/// - The server says `fake: true` (a local server without Razorpay keys): its stand-in Checkout is used, and
+/// - The server says `fake: true` (a local server without Cashfree keys): its stand-in checkout is used, and
 ///   [fail] makes the payment fail (the demo "make it fail" switch).
-/// - Otherwise the real Razorpay Checkout opens (UPI, cards, net banking) on the phone.
-/// OPflow's logo in Razorpay's window (without it Razorpay shows the letter "O").
-const _logo = 'https://opflow-alpha.vercel.app/icons/Icon-192.png';
-
-Future<CheckoutResult> payOrder(Map<String, dynamic> payment, {required String description, bool fail = false, String? phone, String? bookingId, String? pickId}) async {
+/// - The phone app: Cashfree's checkout (UPI, cards, net banking) opens over the app.
+/// - The web version (iPhone users in Safari): Cashfree's page opens in this same tab (no pop-ups, which phones
+///   block); afterwards Cashfree brings the person back to /pay-return or /pick-return, and this never returns.
+Future<CheckoutResult> payOrder(Map<String, dynamic> payment, {bool fail = false}) async {
+  final orderId = payment['orderId'] as String;
   if (payment['fake'] == true) {
-    final r = await Api.instance.post('/v1/dev/razorpay/pay', {'orderId': payment['orderId'], 'fail': fail}, false);
-    return Map<String, String>.from((r as Map).map((k, v) => MapEntry('$k', '$v')));
+    await Api.instance.post('/v1/dev/cashfree/pay', {'orderId': orderId, 'fail': fail}, false);
+    return {'orderId': orderId};
   }
+  final sessionId = payment['paymentSessionId'] as String;
+  final production = payment['environment'] == 'production';
   if (kIsWeb) {
-    // The web version (iPhone users in Safari): Razorpay's web Checkout, same order and server check.
     try {
-      // Redirect mode: the bank / UPI page opens in this same tab (pop-up windows are blocked on iPhones and
-      // often come up blank), then the server's return address brings the person back to /pay-return.
-      final back = '${Uri.base.origin}${Uri.base.path}'.replaceAll(RegExp(r'/$'), '');
-      return await payInBrowser({
-        'key': payment['keyId'],
-        'order_id': payment['orderId'],
-        'amount': (payment['amount'] as Map)['paise'],
-        'currency': 'INR',
-        'name': 'OPflow',
-        'description': description,
-        'image': '${Uri.base.origin}/icons/Icon-192.png',
-        'prefill': {'contact': ?phone},
-        'theme': {'color': '#1F7A5C'},
-        if (bookingId != null || pickId != null) ...{
-          'redirect': true,
-          'callback_url':
-              '${AppConfig.apiBase}/v1/payments/return?${bookingId != null ? 'b=$bookingId' : 'p=$pickId'}&to=${Uri.encodeComponent(back)}',
-        },
-      }).timeout(const Duration(minutes: 12));
-    } on WebPayClosed {
-      throw ApiException('PAYMENT_CANCELLED', 'Payment was not finished. No money was taken. Your place is kept for a few minutes.');
+      await payInBrowser(sessionId, production: production);
     } on WebPayUnavailable {
-      throw ApiException('PAYMENT_UNAVAILABLE', 'The payment window could not open. Please check your internet and try again.', retryable: true);
-    } on TimeoutException {
-      throw ApiException('PAYMENT_TIMEOUT', 'Payment took too long. If money was taken, it will come back automatically.');
+      throw ApiException('PAYMENT_UNAVAILABLE', 'The payment page could not open. Please check your internet and try again.', retryable: true);
     }
+    // The page is leaving for Cashfree; nothing after this runs.
+    return Completer<CheckoutResult>().future;
   }
   final done = Completer<CheckoutResult>();
-  final rp = Razorpay();
-  rp.on(Razorpay.EVENT_PAYMENT_SUCCESS, (PaymentSuccessResponse r) {
-    if (!done.isCompleted) {
-      done.complete({'razorpay_order_id': r.orderId ?? '', 'razorpay_payment_id': r.paymentId ?? '', 'razorpay_signature': r.signature ?? ''});
-    }
-  });
-  rp.on(Razorpay.EVENT_PAYMENT_ERROR, (PaymentFailureResponse r) {
-    if (done.isCompleted) return;
-    done.completeError(r.code == Razorpay.PAYMENT_CANCELLED
-        ? ApiException('PAYMENT_CANCELLED', 'Payment was not finished. No money was taken. Your place is kept for a few minutes.')
-        : ApiException('PAYMENT_FAILED', 'The payment did not go through. No money was taken. Please try again.'));
-  });
-  rp.on(Razorpay.EVENT_EXTERNAL_WALLET, (ExternalWalletResponse _) {});
+  final service = CFPaymentGatewayService();
+  service.setCallback(
+    (id) {
+      if (!done.isCompleted) done.complete({'orderId': id.isEmpty ? orderId : id});
+    },
+    (CFErrorResponse e, String id) {
+      if (done.isCompleted) return;
+      final code = (e.getCode() ?? '').toLowerCase();
+      done.completeError(code.contains('cancel') || code.contains('dropped')
+          ? ApiException('PAYMENT_CANCELLED', 'Payment was not finished. No money was taken. Your place is kept for a few minutes.')
+          : ApiException('PAYMENT_FAILED', 'The payment did not go through. No money was taken. Please try again.'));
+    },
+  );
   try {
-    rp.open({
-      'key': payment['keyId'],
-      'order_id': payment['orderId'],
-      'amount': (payment['amount'] as Map)['paise'],
-      'currency': 'INR',
-      'name': 'OPflow',
-      'description': description,
-      'image': _logo,
-      'prefill': {'contact': ?phone},
-      'theme': {'color': '#1F7A5C'},
-    });
+    final session = CFSessionBuilder()
+        .setEnvironment(production ? CFEnvironment.PRODUCTION : CFEnvironment.SANDBOX)
+        .setOrderId(orderId)
+        .setPaymentSessionId(sessionId)
+        .build();
+    service.doPayment(CFWebCheckoutPaymentBuilder().setSession(session).build());
     return await done.future.timeout(const Duration(minutes: 12));
   } on TimeoutException {
     throw ApiException('PAYMENT_TIMEOUT', 'Payment took too long. If money was taken, it will come back automatically.');
-  } finally {
-    rp.clear();
+  } on ApiException {
+    rethrow;
+  } catch (_) {
+    throw ApiException('PAYMENT_UNAVAILABLE', 'The payment page could not open. Please try again.', retryable: true);
   }
 }
+
+/// On the web: this app's own address, so the server can tell Cashfree where to bring the person back.
+String? get webReturnTo => kIsWeb ? '${Uri.base.origin}${Uri.base.path}'.replaceAll(RegExp(r'/$'), '') : null;

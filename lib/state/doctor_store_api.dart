@@ -617,6 +617,30 @@ class ApiDoctorStore extends DoctorStore {
   }
 
   @override
+  Future<DoctorPayouts> loadPayouts() async {
+    final r = Map<String, dynamic>.from(await _api.get('/v1/doctor/payouts') as Map);
+    final bank = r['bank'] as Map?;
+    String show(Object? m) => ((m as Map?)?['display'] as String?) ?? '';
+    return DoctorPayouts(
+      bankLast4: bank?['last4'] as String?,
+      hasBank: bank != null,
+      bankActive: bank?['active'] == true,
+      items: [
+        for (final e in (r['items'] as List).cast<Map>())
+          DoctorPayout(
+            id: e['id'] as String,
+            amount: show(e['amount']),
+            visits: (e['visits'] as num?)?.toInt() ?? 0,
+            deducted: e['deducted'] == null ? null : show(e['deducted']),
+            status: (e['status'] as String?) ?? 'pending',
+            bankReference: e['bankReference'] as String?,
+            sentAt: DateTime.tryParse('${e['createdAt']}')?.toLocal() ?? DateTime.now(),
+          ),
+      ],
+    );
+  }
+
+  @override
   Future<(List<SignedInDevice>, int, int)> devices() async {
     final r = Map<String, dynamic>.from(await _api.get('/v1/doctor/devices') as Map);
     return (

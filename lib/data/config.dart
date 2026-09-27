@@ -21,7 +21,24 @@ class AppConfig {
   static const renderServer = 'https://opflow-backend.onrender.com';
 
   /// The app's own version, sent with every request (old apps are asked to update).
-  static const appVersion = '1.0.0';
+  static const appVersion = '1.1.0';
+
+  /// Set from the server's catalog: this app is older than the oldest one it still supports (e.g. an old
+  /// payment method). The whole app then shows "Please update OPflow".
+  static final updateRequired = ValueNotifier<bool>(false);
+
+  /// True when [version] (x.y.z) is older than [min].
+  static bool olderThan(String version, String min) {
+    List<int> parts(String v) => [for (final p in v.split('.')) int.tryParse(p.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0];
+    final a = parts(version);
+    final b = parts(min);
+    for (var i = 0; i < 3; i++) {
+      final x = i < a.length ? a[i] : 0;
+      final y = i < b.length ? b[i] : 0;
+      if (x != y) return x < y;
+    }
+    return false;
+  }
 
   static bool? _apiOverride;
   static String? _baseOverride;

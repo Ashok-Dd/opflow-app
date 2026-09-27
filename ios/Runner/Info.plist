@@ -60,7 +60,7 @@
 	<array>
 		<string>comgooglemaps</string>
 		<string>tel</string>
-		<!-- UPI apps Razorpay can open for payment on iPhone -->
+		<!-- UPI apps Cashfree can open for payment on iPhone -->
 		<string>tez</string>
 		<string>phonepe</string>
 		<string>paytmmp</string>

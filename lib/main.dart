@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/errors.dart';
+import 'data/config.dart';
+import 'widgets/update_required.dart';
 import 'router/app_router.dart';
 import 'state/directory_store.dart';
 import 'state/session.dart';
@@ -103,7 +105,10 @@ class _OpflowAppState extends State<OpflowApp> {
         // Allow large phone text, but stop at 1.5× so screens stay usable.
         return MediaQuery(
           data: mq.copyWith(textScaler: mq.textScaler.clamp(minScaleFactor: 1, maxScaleFactor: 1.5)),
-          child: child ?? const SizedBox.shrink(),
+          child: ValueListenableBuilder<bool>(
+            valueListenable: AppConfig.updateRequired,
+            builder: (context, old, _) => old ? const UpdateRequiredScreen() : (child ?? const SizedBox.shrink()),
+          ),
         );
       },
     );

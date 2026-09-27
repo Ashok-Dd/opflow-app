@@ -1,42 +1,24 @@
-import 'dart:async';
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
-/// Razorpay Checkout for the web version (iPhone users open OPflow in Safari). Same order, same keys and the same
-/// server check as the phone app; only the payment window is Razorpay's web one (web/index.html loads it).
-@JS('Razorpay')
-extension type _Razorpay._(JSObject _) implements JSObject {
-  external factory _Razorpay(JSObject options);
-  external void open();
-}
+/// Cashfree's web checkout for the web version (iPhone users open OPflow in Safari). Same order and the same
+/// server check as the phone app; web/index.html loads Cashfree's script.
+@JS('Cashfree')
+external JSFunction? get _cashfreeFactory;
 
-/// Opens Razorpay's web Checkout. Resolves with its three ids; throws [WebPayClosed] when the person closes the
-/// window without paying, [WebPayUnavailable] when Razorpay's script could not load (no internet, blocked).
-Future<Map<String, String>> payInBrowser(Map<String, Object?> options) {
-  if (!globalContext.has('Razorpay')) throw WebPayUnavailable();
-  final done = Completer<Map<String, String>>();
-  final o = options.jsify() as JSObject;
-  o['handler'] = ((JSObject r) {
-    String read(String k) => (r[k] as JSString?)?.toDart ?? '';
-    if (!done.isCompleted) {
-      done.complete({
-        'razorpay_order_id': read('razorpay_order_id'),
-        'razorpay_payment_id': read('razorpay_payment_id'),
-        'razorpay_signature': read('razorpay_signature'),
-      });
-    }
-  }).toJS;
-  // A failed try stays inside Razorpay's window (it offers "Retry"); closing the window ends it.
-  final modal = JSObject();
-  modal['ondismiss'] = (() {
-    if (!done.isCompleted) done.completeError(WebPayClosed());
-  }).toJS;
-  modal['confirm_close'] = true.toJS;
-  o['modal'] = modal;
-  _Razorpay(o).open();
-  return done.future;
+/// Opens Cashfree's payment page in this same tab (`redirectTarget: _self`). After paying (or giving up) Cashfree
+/// sends the browser to the order's return address, which brings the person back into the app.
+/// Throws [WebPayUnavailable] when Cashfree's script could not load (no internet, blocked).
+Future<void> payInBrowser(String paymentSessionId, {required bool production}) async {
+  final make = _cashfreeFactory;
+  if (make == null) throw WebPayUnavailable();
+  final options = JSObject()..['mode'] = (production ? 'production' : 'sandbox').toJS;
+  final cashfree = make.callAsFunction(null, options) as JSObject?;
+  if (cashfree == null) throw WebPayUnavailable();
+  final checkout = JSObject()
+    ..['paymentSessionId'] = paymentSessionId.toJS
+    ..['redirectTarget'] = '_self'.toJS;
+  cashfree.callMethod('checkout'.toJS, checkout);
 }
-
-class WebPayClosed implements Exception {}
 
 class WebPayUnavailable implements Exception {}

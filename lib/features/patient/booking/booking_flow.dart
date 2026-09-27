@@ -447,7 +447,7 @@ class _PaySheetState extends State<MockPaySheet> {
               children: [
                 const Icon(Icons.lock_outline, size: 16, color: OpColors.inkSoft),
                 const SizedBox(width: 6),
-                Expanded(child: Text('Safe payment by Razorpay'.tr, style: OpText.small.copyWith(fontSize: 13))),
+                Expanded(child: Text('Safe payment by Cashfree'.tr, style: OpText.small.copyWith(fontSize: 13))),
               ],
             ),
             const SizedBox(height: 8),

@@ -261,7 +261,7 @@ class ApiPatientStore extends PatientStore {
 
   // ── Booking and paying ─────────────────────────────────────────────────────────────────────────
 
-  /// Hold the place → pay (Razorpay Checkout, or the local stand-in) → the server confirms.
+  /// Hold the place → pay (Cashfree checkout, or the local stand-in) → the server confirms.
   /// Returns null when the payment did not go through (no money taken; the screen offers "try again").
   /// Other problems (time just got full, bookings paused…) are thrown with the server's message.
   @override
@@ -275,13 +275,13 @@ class ApiPatientStore extends PatientStore {
   }) async {
     final windowId = window.id;
     if (windowId == null) throw ApiException('WINDOW_NOT_FOUND', 'This time is not available any more. Please pick another.');
-    final hold = Map<String, dynamic>.from(await _api.postOnce('/v1/bookings/hold', {'windowId': windowId, 'note': ?(note.isEmpty ? null : note)}) as Map);
+    final hold = Map<String, dynamic>.from(await _api.postOnce('/v1/bookings/hold', {'windowId': windowId, 'note': ?(note.isEmpty ? null : note), 'returnTo': ?webReturnTo}) as Map);
     return _payAndConfirm(hold, '${doctor.name} · ${dayLabel(day)}', fail, doctor.id);
   }
 
   @override
   Future<Booking?> payEmergency({required Doctor doctor, required String hospitalId, required String note, bool fail = false}) async {
-    final hold = Map<String, dynamic>.from(await _api.postOnce('/v1/bookings/emergency', {'doctorId': doctor.id}) as Map);
+    final hold = Map<String, dynamic>.from(await _api.postOnce('/v1/bookings/emergency', {'doctorId': doctor.id, 'returnTo': ?webReturnTo}) as Map);
     return _payAndConfirm(hold, 'Emergency consultation · ${doctor.name}', fail, doctor.id);
   }
 
@@ -290,10 +290,10 @@ class ApiPatientStore extends PatientStore {
     final bookingId = (hold['booking'] as Map)['id'] as String;
     CheckoutResult? paid;
     try {
-      paid = await payOrder(payment, description: description, fail: fail, phone: _phone, bookingId: bookingId);
+      paid = await payOrder(payment, fail: fail);
     } on ApiException {
       // Checkout said failed / cancelled / too long. That is not proof: UPI apps and weak signal can report a
-      // failure after the money was taken. The server (and through it Razorpay) decides, below.
+      // failure after the money was taken. The server (and through it Cashfree) decides, below.
     }
     if (paid != null) {
       try {
@@ -309,7 +309,7 @@ class ApiPatientStore extends PatientStore {
     return _settle(bookingId, doctorId, checkoutSucceeded: paid != null);
   }
 
-  /// Back from Razorpay's bank page (the web version): the server decides, exactly as after the phone's Checkout.
+  /// Back from Cashfree's payment page (the web version): the server decides, exactly as after the phone's checkout.
   @override
   Future<Booking?> settleReturned(String bookingId, {required bool checkoutSaidPaid}) =>
       _settle(bookingId, '', checkoutSucceeded: checkoutSaidPaid);
@@ -364,7 +364,7 @@ class ApiPatientStore extends PatientStore {
         ],
       );
 
-  /// Opens the order → Razorpay (phone SDK, or the web page) → the server confirms and makes the list.
+  /// Opens the order → Cashfree (phone SDK, or the web page) → the server confirms and makes the list.
   /// Null when the payment did not go through (no money taken).
   @override
   Future<PickResult?> buyPick(String typeId, {bool fail = false}) async {
@@ -374,12 +374,13 @@ class ApiPatientStore extends PatientStore {
       'near': _near,
       if (s.place.isNotEmpty) 'place': s.place,
       'consent': true,
+      'returnTo': ?webReturnTo,
     }) as Map);
     final id = (r['purchase'] as Map)['id'] as String;
     final payment = Map<String, dynamic>.from(r['payment'] as Map);
     CheckoutResult? paid;
     try {
-      paid = await payOrder(payment, description: 'OPflow doctor suggestion', fail: fail, phone: _phone, pickId: id);
+      paid = await payOrder(payment, fail: fail);
     } on ApiException {
       // Not proof of "not paid" (UPI can report a failure after taking money): the server decides below.
     }
@@ -448,7 +449,7 @@ class ApiPatientStore extends PatientStore {
     markRated(bookingId);
   }
 
-  /// Asks the server "was I charged?" a few times (Razorpay's own message can take a few seconds).
+  /// Asks the server "was I charged?" a few times (Cashfree's own message can take a few seconds).
   /// Booked → the booking. Clearly not paid → null ("payment did not go through"). Still unknown (no internet)
   /// → a calm message: the booking appears by itself, or the money comes back automatically.
   Future<Booking?> _settle(String bookingId, String doctorId, {required bool checkoutSucceeded}) async {
@@ -480,11 +481,6 @@ class ApiPatientStore extends PatientStore {
     unawaited(_loadMessages().then((_) => notifyListeners()).catchError((_) {}));
     notifyListeners();
     return b;
-  }
-
-  String? get _phone {
-    final p = SessionStore.instance.phone.replaceAll(RegExp(r'\D'), '');
-    return p.isEmpty ? null : p;
   }
 
   @override

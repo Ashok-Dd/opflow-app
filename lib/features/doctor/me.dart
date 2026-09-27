@@ -546,6 +546,7 @@ class EarningsScreen extends ConsumerStatefulWidget {
 
 class _EarningsScreenState extends ConsumerState<EarningsScreen> {
   int _tab = 0;
+  late final Future<DoctorPayouts> _payouts = ref.read(doctorProvider).loadPayouts();
 
   @override
   Widget build(BuildContext context) {
@@ -613,7 +614,7 @@ class _EarningsScreenState extends ConsumerState<EarningsScreen> {
                             children: [
                               Text(r.patient, style: OpText.smallStrong),
                               Text(
-                                r.refunded ? 'Money back given' : (r.paid ? '${dayLabel(r.date)} · In bank' : '${dayLabel(r.date)} · Coming'),
+                                r.refunded ? 'Money back given'.tr : (r.paid ? '{0} · In bank'.trf([dayLabel(r.date)]) : '{0} · Coming'.trf([dayLabel(r.date)])),
                                 style: OpText.small.copyWith(fontSize: 11.5, color: r.refunded ? OpColors.alarm : (r.paid ? OpColors.fern : OpColors.amber)),
                               ),
                             ],
@@ -630,6 +631,49 @@ class _EarningsScreenState extends ConsumerState<EarningsScreen> {
                   ),
               ],
             ),
+          ),
+          const SizedBox(height: 22),
+          const SectionLabel('Bank payouts'),
+          FutureBuilder<DoctorPayouts>(
+            future: _payouts,
+            builder: (context, snap) {
+              if (snap.hasError) return Text(friendlyMessage(snap.error!), style: OpText.small.copyWith(color: OpColors.alarm));
+              final p = snap.data;
+              if (p == null) return const Padding(padding: EdgeInsets.all(20), child: Center(child: OpLoader()));
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    !p.hasBank
+                        ? 'Your bank account is not added yet. Please call the OPflow team.'.tr
+                        : p.bankActive
+                            ? 'To your account ending {0}. One payout covers many visits.'.trf([p.bankLast4 ?? '····'])
+                            : 'Your bank account is being checked. Payouts start once it is verified.'.tr,
+                    style: OpText.small.copyWith(fontSize: 13),
+                  ),
+                  const SizedBox(height: 10),
+                  if (p.items.isEmpty)
+                    Text('Your money is sent to your bank 24 hours after your visits are over.'.tr, style: OpText.small.copyWith(fontSize: 13))
+                  else
+                    MenuGroup(children: [
+                      for (final x in p.items)
+                        MenuRow(
+                          icon: Icons.account_balance_outlined,
+                          title: '{0} · {1} visits'.trf([x.amount, x.visits]),
+                          detail: [
+                            dayLabel(x.sentAt),
+                            if (x.bankReference != null) 'Ref {0}'.trf([x.bankReference!]),
+                            if (x.deducted != null) '{0} taken back for a cancelled visit'.trf([x.deducted!]),
+                          ].join(' · '),
+                          trailing: StatusTag(
+                            x.status == 'success' ? 'Reached your bank' : (x.status == 'pending' ? 'On the way' : 'Will be sent again'),
+                            tone: x.status == 'success' ? Tone.good : (x.status == 'pending' ? Tone.warn : Tone.bad),
+                          ),
+                        ),
+                    ]),
+                ],
+              );
+            },
           ),
         ],
       ),

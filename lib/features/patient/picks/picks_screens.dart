@@ -481,7 +481,7 @@ class _MyPicksScreenState extends ConsumerState<MyPicksScreen> {
 }
 
 // ---------------------------------------------------------------------------
-// The web version comes back here after Razorpay's bank page
+// The web version comes back here after Cashfree's payment page
 
 class PickReturnScreen extends ConsumerStatefulWidget {
   const PickReturnScreen({super.key, required this.id, required this.checkoutSaidPaid});

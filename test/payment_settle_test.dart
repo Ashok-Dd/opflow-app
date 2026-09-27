@@ -32,7 +32,7 @@ MockClient _server(String checkStatus, {required bool paid, List<String>? calls}
       switch (req.url.path) {
         case '/v1/bookings/hold':
           return http.Response(jsonEncode({'booking': _booking('pending_payment'), 'payment': {'fake': true, 'orderId': 'order_1', 'amount': {'paise': 30000}}}), 201, headers: json);
-        case '/v1/dev/razorpay/pay':
+        case '/v1/dev/cashfree/pay':
           // What the phone sees: "payment failed" (a UPI app, a timeout…).
           return http.Response(jsonEncode({'error': {'code': 'PAYMENT_FAILED', 'message': 'The payment did not go through.'}}), 402, headers: json);
         case '/v1/payments/b-1/check':

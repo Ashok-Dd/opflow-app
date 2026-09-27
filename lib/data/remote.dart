@@ -123,6 +123,8 @@ class Remote extends ChangeNotifier {
           EmergencyKind(k['id'] as String, k['name'] as String, k['detail'] as String, _kindIcons[k['id']] ?? Icons.emergency_outlined,
               (k['typeIds'] as List).cast<String>()),
       ];
+      final min = ((cat['app'] as Map?)?['minSupportedVersion']) as String?;
+      if (min != null) AppConfig.updateRequired.value = AppConfig.olderThan(AppConfig.appVersion, min);
       final rules = (cat['rules'] as Map?) ?? const {};
       if (rules['emergencyChargePercent'] is num) MockData.emergencyChargePercent = (rules['emergencyChargePercent'] as num).toInt();
 

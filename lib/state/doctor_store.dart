@@ -138,6 +138,29 @@ class OpdSummary {
 }
 
 /// The doctor side. All fake; a real API replaces this later.
+/// One bank payout to the doctor (Cashfree): covers many visits. `failed` never reached the doctor; those
+/// visits are paid again in a later payout.
+class DoctorPayout {
+  const DoctorPayout({required this.id, required this.amount, required this.visits, this.deducted, required this.status, this.bankReference, required this.sentAt});
+
+  final String id;
+  final String amount;
+  final int visits;
+  final String? deducted;
+  final String status; // pending | success | failed
+  final String? bankReference;
+  final DateTime sentAt;
+}
+
+class DoctorPayouts {
+  const DoctorPayouts({this.bankLast4, required this.hasBank, required this.bankActive, required this.items});
+
+  final String? bankLast4;
+  final bool hasBank;
+  final bool bankActive;
+  final List<DoctorPayout> items;
+}
+
 /// Where the doctor's account is signed in (GET /v1/doctor/devices).
 class SignedInDevice {
   const SignedInDevice({required this.id, required this.device, required this.web, required this.thisDevice, required this.lastUsed});
@@ -579,6 +602,21 @@ class DoctorStore extends ChangeNotifier {
       }
     }
     return out;
+  }
+
+  /// Bank payouts (GET /v1/doctor/payouts). Demo: two sample payouts.
+  Future<DoctorPayouts> loadPayouts() async {
+    await Future.delayed(OpMotion.fakeShort);
+    final now = DateTime.now();
+    return DoctorPayouts(
+      bankLast4: '4321',
+      hasBank: true,
+      bankActive: true,
+      items: [
+        DoctorPayout(id: 'po2', amount: '₹6,480', visits: 24, status: 'pending', sentAt: now.subtract(const Duration(hours: 2))),
+        DoctorPayout(id: 'po1', amount: '₹5,940', visits: 22, status: 'success', bankReference: 'UTR2026092712345', sentAt: now.subtract(const Duration(days: 1))),
+      ],
+    );
   }
 
   /// Phones (and the website) this account is signed in on, with the limits. Demo: just this phone.

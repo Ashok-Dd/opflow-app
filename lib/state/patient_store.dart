@@ -125,7 +125,7 @@ class PatientStore extends ChangeNotifier {
   // ---------------------------------------------------------------------------
   // Booking and paying
 
-  /// The web version after Razorpay's bank page (redirect mode). Demo mode never redirects.
+  /// The web version after Cashfree's payment page (same-tab mode). Demo mode never redirects.
   Future<Booking?> settleReturned(String bookingId, {required bool checkoutSaidPaid}) async => null;
 
   // ---------------------------------------------------------------------------

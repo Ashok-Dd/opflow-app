@@ -13,7 +13,7 @@ import '../../../widgets/op_button.dart';
 import '../../../widgets/op_loader.dart';
 import 'booking_flow.dart' show BookingSuccessView;
 
-/// The web version comes back here after Razorpay's bank / UPI page (redirect mode: no pop-ups, which iPhones
+/// The web version comes back here after Cashfree's payment page (redirect mode: no pop-ups, which iPhones
 /// block). It asks the server "was I charged?" — the same check the phone app uses — then shows "Booking done!"
 /// or "Payment did not go through". Nothing from the address bar is trusted except which booking to check.
 class PayReturnScreen extends ConsumerStatefulWidget {
