@@ -214,7 +214,7 @@ class _Bell extends ConsumerWidget {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: OpColors.alarm,
-                      borderRadius: BorderRadius.circular(9),
+                      borderRadius: BorderRadius.circular(3),
                       border: Border.all(color: OpColors.forest, width: 1.5),
                     ),
                     child: Text(n > 9 ? '9+' : '$n', style: OpText.smallStrong.copyWith(color: Colors.white, fontSize: 10.5, height: 1)),

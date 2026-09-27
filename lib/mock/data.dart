@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../theme/med_icons.dart';
 import 'format.dart';
 import 'models.dart';
 import '../data/config.dart';
@@ -9,21 +8,22 @@ import '../data/remote.dart';
 /// Fake catalogue for the UI build. Every name, number and hospital here is made up.
 abstract final class MockData {
   static List<DoctorType> types = const <DoctorType>[
-    DoctorType('general', 'General doctor', 'General Medicine', MedIcons.stethoscope),
-    DoctorType('child', 'Child doctor', 'Pediatrics', MedIcons.pediatrics),
-    DoctorType('women', "Women's doctor", 'Gynecology & Obstetrics', MedIcons.gynecology),
-    DoctorType('skin', 'Skin doctor', 'Dermatology', MedIcons.dermatology),
-    DoctorType('bone', 'Bone doctor', 'Orthopedics', MedIcons.orthopedics),
-    DoctorType('eye', 'Eye doctor', 'Ophthalmology', MedIcons.ophthalmology),
-    DoctorType('ent', 'Ear-nose-throat doctor', 'ENT', MedIcons.ent),
-    DoctorType('teeth', 'Teeth doctor', 'Dentistry', MedIcons.dentistry),
-    DoctorType('heart', 'Heart doctor', 'Cardiology', MedIcons.cardiology),
-    DoctorType('brain', 'Brain and nerve doctor', 'Neurology', MedIcons.neurology),
-    DoctorType('mind', 'Mind doctor', 'Psychiatry', MedIcons.psychiatry),
-    DoctorType('stomach', 'Stomach doctor', 'Gastroenterology', MedIcons.gastroenterology),
-    DoctorType('lungs', 'Lungs doctor', 'Pulmonology', MedIcons.pulmonology),
-    DoctorType('kidney', 'Urine and kidney doctor', 'Urology', MedIcons.urology),
-    DoctorType('surgeon', 'Surgeon', 'General Surgery', MedIcons.surgical),
+    DoctorType('general', 'General doctor', 'General Medicine', Icons.medical_services_outlined),
+    DoctorType('child', 'Child doctor', 'Pediatrics', Icons.child_care),
+    DoctorType('women', "Women's doctor", 'Gynecology & Obstetrics', Icons.pregnant_woman),
+    DoctorType('skin', 'Skin doctor', 'Dermatology', Icons.face_retouching_natural),
+    DoctorType('bone', 'Bone doctor', 'Orthopedics', Icons.accessibility_new),
+    DoctorType('eye', 'Eye doctor', 'Ophthalmology', Icons.visibility_outlined),
+    DoctorType('ent', 'Ear-nose-throat doctor', 'ENT', Icons.hearing),
+    DoctorType('teeth', 'Teeth doctor', 'Dentistry', Icons.emoji_emotions_outlined),
+    DoctorType('heart', 'Heart doctor', 'Cardiology', Icons.favorite_border),
+    DoctorType('brain', 'Brain and nerve doctor', 'Neurology', Icons.psychology_outlined),
+    DoctorType('mind', 'Mind doctor', 'Psychiatry', Icons.self_improvement),
+    DoctorType('stomach', 'Stomach doctor', 'Gastroenterology', Icons.restaurant_outlined),
+    DoctorType('lungs', 'Lungs doctor', 'Pulmonology', Icons.air),
+    DoctorType('kidney', 'Urine and kidney doctor', 'Urology', Icons.water_drop_outlined),
+    DoctorType('surgeon', 'Surgeon', 'General Surgery', Icons.healing),
+    DoctorType('cancer', 'Cancer doctor', 'Oncology', Icons.volunteer_activism_outlined),
   ];
 
   /// The eight shown on the patient Home screen.

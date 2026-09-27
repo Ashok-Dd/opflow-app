@@ -330,7 +330,7 @@ class _Bell extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                     decoration: BoxDecoration(
                       color: OpColors.alarm,
-                      borderRadius: BorderRadius.circular(9),
+                      borderRadius: BorderRadius.circular(3),
                       border: Border.all(color: OpColors.card, width: 1.5),
                     ),
                     child: Text('$count', style: OpText.mono(11, color: Colors.white, weight: FontWeight.w600)),

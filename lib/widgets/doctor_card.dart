@@ -6,10 +6,8 @@ import '../mock/format.dart';
 import '../mock/models.dart';
 import '../theme/text.dart';
 import '../theme/tokens.dart';
-import 'bits.dart';
 import 'doctor_portrait.dart';
 import 'op_button.dart';
-import 'ticket.dart';
 
 /// "Mon – Sat", "Every day", or "Mon, Wed, Fri".
 String doctorDays(Doctor d) {
@@ -28,7 +26,8 @@ IconData genderIcon(String g) => switch (g) {
       _ => Icons.person_outline,
     };
 
-/// The large doctor card patients see in every list: portrait, who, where, when, and the next free time.
+/// The doctor card patients see in every list: compact (about a third of a phone screen) but complete —
+/// portrait, who, where, when, the next free time and the fee.
 class DoctorCard extends StatelessWidget {
   const DoctorCard({super.key, required this.doctor, required this.onTap, this.onBook, this.hospitalId});
 
@@ -65,91 +64,44 @@ class DoctorCard extends StatelessWidget {
           children: [
             // Who
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 18, 16, 14),
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Hero(tag: 'portrait-${d.id}', child: DoctorPortrait(doctor: d, width: 100)),
-                  const SizedBox(width: 16),
+                  Hero(tag: 'portrait-${d.id}', child: DoctorPortrait(doctor: d, width: 64)),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('CHECKED BY OPFLOW'.tr, style: OpText.label.copyWith(fontSize: 10, color: OpColors.amber, letterSpacing: 1.4)),
-                        const SizedBox(height: 4),
-                        Text(d.name, style: OpText.heading.copyWith(fontSize: 21, height: 1.15)),
-                        const SizedBox(height: 4),
+                        Text(d.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: OpText.heading.copyWith(fontSize: 18, height: 1.15)),
+                        const SizedBox(height: 2),
                         Text.rich(
                           TextSpan(children: [
-                            TextSpan(text: type.simple, style: OpText.smallStrong.copyWith(color: OpColors.fern)),
-                            TextSpan(text: '  ·  ${type.proper}', style: OpText.small.copyWith(fontSize: 13)),
+                            TextSpan(text: type.simple.tr, style: OpText.smallStrong.copyWith(color: OpColors.fern, fontSize: 13)),
+                            TextSpan(text: '  ·  ${type.proper.tr}', style: OpText.small.copyWith(fontSize: 12.5)),
                           ]),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        Text(d.degrees, style: OpText.small.copyWith(fontSize: 13)),
-                        const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 10,
-                          runSpacing: 4,
-                          children: [
-                            _Fact(icon: genderIcon(d.gender), text: d.gender.tr),
-                            _Fact(icon: Icons.workspace_premium_outlined, text: '{0} yrs'.trf([d.years])),
-                            _Fact(icon: Icons.translate, text: d.languages.take(2).join(', ')),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (emergency != null)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                child: StatusTag(emergency, tone: Tone.bad, icon: Icons.emergency_outlined),
-              ),
-            // Where and when
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: SizedBox(height: 1, child: CustomPaint(painter: _Dashes())),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
-              child: Column(
-                children: [
-                  _InfoLine(icon: Icons.local_hospital_outlined, strong: h.name, rest: '${h.area} · ${h.distanceKm} km'),
-                  const SizedBox(height: 8),
-                  _InfoLine(icon: Icons.schedule, strong: doctorDays(d), rest: doctorHours(d), mono: true),
-                ],
-              ),
-            ),
-            // Next free time and fee
-            Container(
-              color: OpColors.mint.withValues(alpha: 0.55),
-              padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(d.bookingsPaused ? 'BOOKINGS'.tr : 'NEXT FREE TIME'.tr, style: OpText.label.copyWith(fontSize: 10.5)),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 3),
                         Text(
-                          d.bookingsPaused
-                              ? 'Paused by the doctor'.tr
-                              : (next == null ? 'Full for 2 weeks' : '${dayLabel(next.$1)}  ${windowLabel(next.$2.start)}'),
-                          style: OpText.mono(15, weight: FontWeight.w600),
+                          '${d.degrees}  ·  ${'{0} yrs'.trf([d.years])}  ·  ${d.languages.take(2).join(', ')}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: OpText.small.copyWith(fontSize: 12, color: OpColors.inkSoft),
                         ),
-                        if (next != null) ...[
-                          const SizedBox(height: 4),
+                        if (emergency != null) ...[
+                          const SizedBox(height: 5),
                           Row(
                             children: [
-                              SeatMeter(total: next.$2.capacity, taken: next.$2.booked, box: 8, animate: false),
-                              const SizedBox(width: 6),
+                              const Icon(Icons.emergency_outlined, size: 13, color: OpColors.alarm),
+                              const SizedBox(width: 4),
                               Flexible(
-                                child: Text('{0} left'.trf([next.$2.left]),
-                                    style: OpText.small.copyWith(
-                                        fontSize: 12, fontWeight: FontWeight.w600, color: next.$2.left <= 2 ? OpColors.amber : OpColors.fern)),
+                                child: Text(emergency,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: OpText.small.copyWith(fontSize: 12, fontWeight: FontWeight.w600, color: OpColors.alarm)),
                               ),
                             ],
                           ),
@@ -157,15 +109,54 @@ class DoctorCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(rupees(d.fee), style: OpText.mono(20, weight: FontWeight.w600)),
-                      const SizedBox(height: 6),
-                      OpButton(label: 'Book'.tr, expand: false, height: 40, onPressed: next == null ? null : (onBook ?? onTap)),
-                    ],
+                ],
+              ),
+            ),
+            // Where and when
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+              child: Column(
+                children: [
+                  _InfoLine(icon: Icons.local_hospital_outlined, strong: h.name, rest: '${h.area} · ${h.distanceKm} km'),
+                  const SizedBox(height: 4),
+                  _InfoLine(icon: Icons.schedule, strong: doctorDays(d).tr, rest: doctorHours(d)),
+                ],
+              ),
+            ),
+            // Next free time and fee
+            Container(
+              decoration: BoxDecoration(
+                color: OpColors.mint.withValues(alpha: 0.5),
+                border: const Border(top: BorderSide(color: OpColors.lineSoft)),
+              ),
+              padding: const EdgeInsets.fromLTRB(12, 8, 10, 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(d.bookingsPaused ? 'BOOKINGS'.tr : 'NEXT FREE TIME'.tr, style: OpText.label.copyWith(fontSize: 9.5)),
+                        const SizedBox(height: 1),
+                        Text(
+                          d.bookingsPaused
+                              ? 'Paused by the doctor'.tr
+                              : (next == null ? 'Full for 2 weeks'.tr : '${dayLabel(next.$1)}  ${windowLabel(next.$2.start)}'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: OpText.smallStrong.copyWith(fontSize: 13.5, color: OpColors.ink),
+                        ),
+                        if (next != null)
+                          Text('{0} left'.trf([next.$2.left]),
+                              style: OpText.small.copyWith(
+                                  fontSize: 11.5, fontWeight: FontWeight.w600, color: next.$2.left <= 2 ? OpColors.amber : OpColors.fern)),
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 8),
+                  Text(rupees(d.fee), style: OpText.mono(16, weight: FontWeight.w600)),
+                  const SizedBox(width: 10),
+                  OpButton(label: 'Book'.tr, expand: false, height: 36, onPressed: next == null ? null : (onBook ?? onTap)),
                 ],
               ),
             ),
@@ -176,60 +167,34 @@ class DoctorCard extends StatelessWidget {
   }
 }
 
-class _Fact extends StatelessWidget {
-  const _Fact({required this.icon, required this.text});
-
-  final IconData icon;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 15, color: OpColors.inkSoft),
-        const SizedBox(width: 3),
-        Text(text, style: OpText.small.copyWith(fontSize: 12.5, color: OpColors.ink)),
-      ],
-    );
-  }
-}
-
 class _InfoLine extends StatelessWidget {
-  const _InfoLine({required this.icon, required this.strong, required this.rest, this.mono = false});
+  const _InfoLine({required this.icon, required this.strong, required this.rest});
 
   final IconData icon;
   final String strong;
   final String rest;
-  final bool mono;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(padding: const EdgeInsets.only(top: 1), child: Icon(icon, size: 18, color: OpColors.fern)),
-        const SizedBox(width: 10),
+        Padding(padding: const EdgeInsets.only(top: 1), child: Icon(icon, size: 15, color: OpColors.fern)),
+        const SizedBox(width: 8),
         Expanded(
           child: Text.rich(
             TextSpan(children: [
-              TextSpan(text: strong, style: OpText.smallStrong),
+              TextSpan(text: strong, style: OpText.smallStrong.copyWith(fontSize: 12.5)),
               const TextSpan(text: '  '),
-              TextSpan(text: rest, style: mono ? OpText.mono(13, color: OpColors.inkSoft) : OpText.small),
+              TextSpan(text: rest, style: OpText.small.copyWith(fontSize: 12.5)),
             ]),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],
     );
   }
-}
-
-class _Dashes extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) => DashedLinePainter().paint(canvas, size);
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 /// Compact portrait card for horizontal lists ("Doctors near you").

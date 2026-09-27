@@ -95,6 +95,9 @@ String rupees(num amount) {
 /// "1 person" / "3 people"
 String people(int n) => n == 1 ? '1 person'.tr : '{0} people'.trf([n]);
 
+/// "1 doctor" / "3 doctors".
+String doctorsCount(int n) => n == 1 ? '1 doctor'.tr : '{0} doctors'.trf([n]);
+
 /// 9876543210 → "98xxxxx210"
 String maskPhone(String phone) {
   final digits = phone.replaceAll(RegExp(r'\D'), '');

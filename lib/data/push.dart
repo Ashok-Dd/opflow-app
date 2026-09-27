@@ -169,7 +169,7 @@ class Push {
               importance: Importance.high,
               priority: Priority.high,
               icon: 'ic_stat_opflow',
-              color: Color(0xFF1F7A5C),
+              color: Color(0xFF0B3A2E),
               styleInformation: DefaultStyleInformation(true, true),
             ),
           ),

@@ -226,8 +226,8 @@ class BottomBar extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: OpColors.card,
-        borderRadius: OpRadius.sheetTop,
-        boxShadow: OpShadow.bar,
+        // A flat bar with one hairline on top (the first version's printed-form look).
+        border: Border(top: BorderSide(color: OpColors.line)),
       ),
       padding: const EdgeInsets.fromLTRB(OpSpace.gutter, 14, OpSpace.gutter, 12),
       child: SafeArea(top: false, child: child),

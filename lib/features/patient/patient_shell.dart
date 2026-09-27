@@ -28,8 +28,8 @@ class OpBottomNav extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: OpColors.card,
-        borderRadius: OpRadius.sheetTop,
-        boxShadow: OpShadow.bar,
+        // A flat bar with one hairline on top (the first version's printed-form look).
+        border: Border(top: BorderSide(color: OpColors.line)),
       ),
       child: SafeArea(
         top: false,
@@ -66,7 +66,7 @@ class OpBottomNav extends StatelessWidget {
                                       height: 32,
                                       decoration: BoxDecoration(
                                         color: i == index ? OpColors.mint : Colors.transparent,
-                                        borderRadius: BorderRadius.circular(16),
+                                        borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: Icon(i == index ? items[i].activeIcon : items[i].icon,
                                           color: i == index ? OpColors.forest : OpColors.inkSoft, size: 23),
@@ -80,7 +80,7 @@ class OpBottomNav extends StatelessWidget {
                                           padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                                           decoration: BoxDecoration(
                                             color: OpColors.alarm,
-                                            borderRadius: BorderRadius.circular(9),
+                                            borderRadius: BorderRadius.circular(3),
                                             border: Border.all(color: OpColors.card, width: 1.5),
                                           ),
                                           child: Text('${badges[i]}', style: OpText.mono(10, color: Colors.white, weight: FontWeight.w600)),

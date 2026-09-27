@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../mock/data.dart';
+import '../../../mock/format.dart' show doctorsCount;
 import '../../../mock/models.dart';
 import '../../../theme/text.dart';
 import '../../../theme/tokens.dart';
@@ -154,7 +155,7 @@ class _FindTabState extends State<FindTab> {
               MenuRow(
                 icon: t.icon,
                 title: t.simple,
-                detail: '{0} · {1} doctors'.trf([t.proper, MockData.doctorsOfType(t.id).length]),
+                detail: '{0} · {1}'.trf([t.proper, doctorsCount(MockData.doctorsOfType(t.id).length)]),
                 onTap: () => context.push('/doctors?type=${t.id}'),
               ),
           ],

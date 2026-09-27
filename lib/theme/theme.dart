@@ -82,19 +82,20 @@ ThemeData buildOpTheme() {
       scrolledUnderElevation: 0,
       centerTitle: false,
       titleTextStyle: OpText.heading,
+      shape: const Border(bottom: BorderSide(color: OpColors.line)),
       systemOverlayStyle: SystemUiOverlayStyle.dark.copyWith(statusBarColor: Colors.transparent),
     ),
     dividerTheme: const DividerThemeData(color: OpColors.line, thickness: 1, space: 1),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: OpColors.card,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 17),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       hintStyle: OpText.body.copyWith(color: OpColors.inkFaint),
       labelStyle: OpText.body.copyWith(color: OpColors.inkSoft),
       floatingLabelStyle: OpText.smallStrong.copyWith(color: OpColors.fern),
-      border: OutlineInputBorder(borderRadius: OpRadius.controlAll, borderSide: const BorderSide(color: OpColors.lineSoft)),
+      border: OutlineInputBorder(borderRadius: OpRadius.controlAll, borderSide: const BorderSide(color: OpColors.line)),
       enabledBorder: OutlineInputBorder(
-          borderRadius: OpRadius.controlAll, borderSide: const BorderSide(color: OpColors.line, width: 1)),
+          borderRadius: OpRadius.controlAll, borderSide: const BorderSide(color: OpColors.line, width: 1.2)),
       focusedBorder: OutlineInputBorder(
           borderRadius: OpRadius.controlAll, borderSide: const BorderSide(color: OpColors.fern, width: 2)),
       errorBorder: OutlineInputBorder(
@@ -131,7 +132,7 @@ ThemeData buildOpTheme() {
       ),
     ),
     checkboxTheme: CheckboxThemeData(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
       side: const BorderSide(color: OpColors.inkSoft, width: 1.5),
       fillColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? OpColors.forest : null),
     ),
@@ -162,8 +163,7 @@ ThemeData buildOpTheme() {
       contentTextStyle: OpText.bodyStrong.copyWith(color: OpColors.paper),
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: OpRadius.controlAll),
-      insetPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-      elevation: 6,
+      elevation: 0,
     ),
     progressIndicatorTheme: const ProgressIndicatorThemeData(color: OpColors.fern),
     tooltipTheme: TooltipThemeData(

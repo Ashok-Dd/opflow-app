@@ -938,4 +938,8 @@ const te = <String, String>{
   'No money was taken. Your place is kept for a few minutes: open My bookings to pay again.': 'డబ్బు తీసుకోలేదు. మీ స్థానం కొన్ని నిమిషాలు ఉంచుతాం: మళ్లీ చెల్లించడానికి నా బుకింగ్‌లు తెరవండి.',
   'Please check My bookings in a minute. If money was taken and there is no booking, it comes back automatically.': 'ఒక నిమిషంలో నా బుకింగ్‌లు చూడండి. డబ్బు తీసుకుని బుకింగ్ లేకపోతే, అది ఆటోమేటిక్‌గా తిరిగి వస్తుంది.',
   'Check again': 'మళ్లీ చూడండి',
+  'Cancer doctor': 'క్యాన్సర్ డాక్టర్',
+  'Oncology': 'ఆంకాలజీ',
+  '1 doctor': '1 డాక్టర్',
+  '{0} doctors': '{0} డాక్టర్లు',
 };

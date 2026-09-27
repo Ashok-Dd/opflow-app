@@ -93,10 +93,6 @@ flutter:
           weight: 600
     # Telugu letters (the fonts above have none). Used as a fallback, so English keeps its own fonts.
     # Noto Sans Telugu, SIL Open Font License 1.1.
-    # Medical icons for the types of doctor (Material Symbols subset, Apache 2.0; see OpflowMedIcons-LICENSE.txt).
-    - family: OpflowMedIcons
-      fonts:
-        - asset: assets/fonts/OpflowMedIcons.ttf
     - family: NotoSansTelugu
       fonts:
         - asset: assets/fonts/NotoSansTelugu.ttf
