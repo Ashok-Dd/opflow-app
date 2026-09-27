@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "if [ ! -x flutter/bin/flutter ]; then git clone --depth 1 --branch 3.38.9 https://github.com/flutter/flutter.git; fi && flutter/bin/flutter config --no-analytics --enable-web && flutter/bin/flutter pub get",
+  "buildCommand": "flutter/bin/flutter build web --release --dart-define=BACKEND=api --dart-define=API_BASE_URL=https://opflow-backend.onrender.com",
+  "outputDirectory": "build/web"
+}

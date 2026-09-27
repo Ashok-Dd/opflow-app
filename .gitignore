@@ -57,3 +57,6 @@ app.*.map.json
 *.jks
 *.keystore
 .env*
+
+# Vercel downloads Flutter here while building the web version
+/flutter/
