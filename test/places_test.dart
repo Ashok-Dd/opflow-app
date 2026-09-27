@@ -2,14 +2,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:opflow/data/places.dart';
 
 void main() {
-  test('the nearest listed area is found from a location', () {
-    expect(nearestPlace(16.2998, 80.4500).label, 'Brodipet, Guntur');
-    expect(nearestPlace(16.50, 80.64).label, 'Vijayawada');
+  test('distance between two points in km', () {
+    // Guntur to Vijayawada is about 30 km in a straight line.
+    final km = kmBetween(16.3067, 80.4365, 16.5062, 80.6480);
+    expect(km, greaterThan(28));
+    expect(km, lessThan(33));
+    expect(kmBetween(16.3, 80.4, 16.3, 80.4), 0);
   });
 
-  test('a saved area label maps back to its place', () {
-    expect(placeByLabel('Brodipet, Guntur')?.lat, 16.2999);
-    expect(placeByLabel('Tenali')?.name, 'Tenali');
-    expect(placeByLabel('Somewhere else'), isNull);
+  test('an area label joins the area and its town', () {
+    expect(const Place('Brodipet', 16.2999, 80.4498, town: 'Guntur').label, 'Brodipet, Guntur');
+    expect(const Place('Guntur', 16.3067, 80.4365).label, 'Guntur');
   });
 }

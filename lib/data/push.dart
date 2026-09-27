@@ -140,6 +140,7 @@ class Push {
             : 'android',
         'fcmToken': token,
         'appVersion': AppConfig.appVersion,
+        if (SessionStore.installId.isNotEmpty) 'installId': SessionStore.installId,
       });
     } catch (e, st) {
       ErrorReporter.report(e, st, where: 'push.send');

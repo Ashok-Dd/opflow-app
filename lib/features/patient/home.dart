@@ -167,7 +167,7 @@ class HomeTab extends ConsumerWidget {
 
           // Three ways to find
           const SectionLabel('How do you want to find a doctor?'),
-          _WayRow(icon: Icons.medical_services_outlined, title: 'By type of doctor'.tr, text: 'Child doctor, Skin doctor, Eye doctor …'.tr, onTap: () => context.go('/find?tab=0')),
+          _WayRow(icon: Icons.medical_services_outlined, title: 'By type of doctor'.tr, text: 'Child doctor, Skin doctor …'.tr, onTap: () => context.go('/find?tab=0')),
           const SizedBox(height: 10),
           _WayRow(icon: Icons.sick_outlined, title: 'By health problem'.tr, text: 'Fever, cough, stomach pain …'.tr, onTap: () => context.go('/find?tab=1')),
           const SizedBox(height: 10),
@@ -193,12 +193,12 @@ class HomeTab extends ConsumerWidget {
           // Hospitals near you
           const SectionLabel('Hospitals near you'),
           DirectoryGate(
-            height: 110 + scale.scale(62),
+            height: 96 + scale.scale(44),
             text: 'Finding hospitals near you…',
             builder: (context) {
               final hospitals = [...MockData.hospitals]..sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
               return SizedBox(
-                height: 110 + scale.scale(62),
+                height: 96 + scale.scale(44),
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   clipBehavior: Clip.none,
@@ -243,20 +243,42 @@ class _HospitalTile extends StatelessWidget {
     return TapScale(
       onTap: onTap,
       child: Container(
-        width: 220,
-        padding: const EdgeInsets.all(12),
+        width: 250,
+        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(color: OpColors.card, borderRadius: OpRadius.cardAll, border: Border.all(color: OpColors.line, width: 1.2)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            HospitalFacade(h: h, height: 64),
-            const SizedBox(height: 10),
-            Text(h.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: OpText.heading.copyWith(fontSize: 16.5)),
-            Text('{0} · {1} km'.trf([h.area, h.distanceKm]), maxLines: 1, style: OpText.small.copyWith(fontSize: 13)),
-            const Spacer(),
-            Text(h.hasEmergency ? 'Open 24 hours · Emergency' : 'Open now',
-                maxLines: 1,
-                style: OpText.smallStrong.copyWith(fontSize: 12.5, color: h.hasEmergency ? OpColors.alarm : OpColors.fern)),
+            // The hospital's front, as a narrow strip on the left (no empty band under the words).
+            SizedBox(width: 72, child: HospitalFacade(h: h, height: double.infinity, radius: false)),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(h.name, maxLines: 2, overflow: TextOverflow.ellipsis, style: OpText.heading.copyWith(fontSize: 15.5, height: 1.2)),
+                    const SizedBox(height: 3),
+                    Text('{0} · {1} km'.trf([h.area, h.distanceKm]), maxLines: 1, overflow: TextOverflow.ellipsis, style: OpText.small.copyWith(fontSize: 12.5)),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Icon(h.hasEmergency ? Icons.emergency_outlined : Icons.check_circle_outline,
+                            size: 13, color: h.hasEmergency ? OpColors.alarm : OpColors.fern),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text((h.hasEmergency ? '24 hours · Emergency' : 'Open now').tr,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: OpText.smallStrong.copyWith(fontSize: 12, color: h.hasEmergency ? OpColors.alarm : OpColors.fern)),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -323,8 +345,8 @@ class _Bell extends StatelessWidget {
               const Icon(Icons.notifications_none, color: OpColors.ink, size: 26),
               if (count > 0)
                 Positioned(
-                  right: 6,
-                  top: 6,
+                  right: -8,
+                  top: -8,
                   child: Container(
                     constraints: const BoxConstraints(minWidth: 18),
                     padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),

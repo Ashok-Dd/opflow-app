@@ -26,11 +26,15 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   static const _maxWait = Duration(seconds: 8);
   static const _minLoader = Duration(milliseconds: 900);
 
-  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500));
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1500),
+  );
   late final Future<void> _ready = _prepare();
   bool _loading = false;
 
@@ -97,18 +101,24 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           final t = _c.value;
           final textIn = opPhase(t, 0.45, 0.75);
           final lineIn = opPhase(t, 0.6, 0.9);
+          // Starts exactly where the phone's own start screen drew it, then rises to the optical centre.
+          final lift =
+              78 * Curves.easeOutCubic.transform(opPhase(t, 0.35, 0.62));
+          final middle = MediaQuery.sizeOf(context).height / 2 - lift;
           return Stack(
             children: [
-              // The mark stays exactly in the middle (where the phone's own start screen drew it).
-              Center(
-                child: SizedBox.square(
-                  dimension: 112,
-                  child: CustomPaint(
-                    painter: OpMarkPainter(
-                      ring: opPhase(t, 0.0, 0.35),
-                      stem: opPhase(t, 0.2, 0.42),
-                      bowl: opPhase(t, 0.32, 0.55),
-                      beat: opPhase(t, 0.45, 0.7),
+              Transform.translate(
+                offset: Offset(0, -lift),
+                child: Center(
+                  child: SizedBox.square(
+                    dimension: 112,
+                    child: CustomPaint(
+                      painter: OpMarkPainter(
+                        ring: opPhase(t, 0.0, 0.35),
+                        stem: opPhase(t, 0.2, 0.42),
+                        bowl: opPhase(t, 0.32, 0.55),
+                        beat: opPhase(t, 0.45, 0.7),
+                      ),
                     ),
                   ),
                 ),
@@ -117,7 +127,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               Positioned(
                 left: 24,
                 right: 24,
-                top: MediaQuery.sizeOf(context).height / 2 + 56 + 18,
+                top: middle + 56 + 18,
                 child: Padding(
                   padding: EdgeInsets.zero,
                   child: Column(
@@ -127,7 +137,13 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         opacity: textIn,
                         child: Transform.translate(
                           offset: Offset(0, 8 * (1 - textIn)),
-                          child: Text('OPflow'.tr, style: OpText.display.copyWith(fontSize: 40, color: OpColors.forest)),
+                          child: Text(
+                            'OPflow'.tr,
+                            style: OpText.display.copyWith(
+                              fontSize: 40,
+                              color: OpColors.forest,
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -136,7 +152,12 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         child: Text(
                           'Right patient, right doctor,\nat the right time.'.tr,
                           textAlign: TextAlign.center,
-                          style: OpText.body.copyWith(color: OpColors.inkSoft, fontStyle: FontStyle.italic, fontFamily: 'Newsreader', fontSize: 18),
+                          style: OpText.body.copyWith(
+                            color: OpColors.inkSoft,
+                            fontStyle: FontStyle.italic,
+                            fontFamily: 'Newsreader',
+                            fontSize: 18,
+                          ),
                         ),
                       ),
                     ],
@@ -154,7 +175,10 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     children: [
                       if (_loading) const OpLoader(size: 44),
                       const SizedBox(height: 10),
-                      Text('Getting things ready…'.tr, style: OpText.small.copyWith(color: OpColors.inkFaint)),
+                      Text(
+                        'Getting things ready…'.tr,
+                        style: OpText.small.copyWith(color: OpColors.inkFaint),
+                      ),
                     ],
                   ),
                 ),

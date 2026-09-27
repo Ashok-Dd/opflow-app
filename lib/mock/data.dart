@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/med_icons.dart';
+
 import 'format.dart';
 import 'models.dart';
 import '../data/config.dart';
@@ -16,14 +18,14 @@ abstract final class MockData {
     DoctorType('eye', 'Eye doctor', 'Ophthalmology', Icons.visibility_outlined),
     DoctorType('ent', 'Ear-nose-throat doctor', 'ENT', Icons.hearing),
     DoctorType('teeth', 'Teeth doctor', 'Dentistry', Icons.emoji_emotions_outlined),
-    DoctorType('heart', 'Heart doctor', 'Cardiology', Icons.favorite_border),
+    DoctorType('heart', 'Heart doctor', 'Cardiology', MedIcons.heart),
     DoctorType('brain', 'Brain and nerve doctor', 'Neurology', Icons.psychology_outlined),
     DoctorType('mind', 'Mind doctor', 'Psychiatry', Icons.self_improvement),
-    DoctorType('stomach', 'Stomach doctor', 'Gastroenterology', Icons.restaurant_outlined),
-    DoctorType('lungs', 'Lungs doctor', 'Pulmonology', Icons.air),
+    DoctorType('stomach', 'Stomach doctor', 'Gastroenterology', MedIcons.stomach),
+    DoctorType('lungs', 'Lungs doctor', 'Pulmonology', MedIcons.lungs),
     DoctorType('kidney', 'Urine and kidney doctor', 'Urology', Icons.water_drop_outlined),
     DoctorType('surgeon', 'Surgeon', 'General Surgery', Icons.healing),
-    DoctorType('cancer', 'Cancer doctor', 'Oncology', Icons.volunteer_activism_outlined),
+    DoctorType('cancer', 'Cancer doctor', 'Oncology', MedIcons.cancer),
   ];
 
   /// The eight shown on the patient Home screen.
@@ -443,22 +445,22 @@ abstract final class MockData {
     HealthProblem('throat', 'Sore throat', Icons.record_voice_over_outlined, ['ent', 'general'], ['child', 'ent']),
     HealthProblem('headache', 'Headache', Icons.sick_outlined, ['general', 'brain'], ['child']),
     HealthProblem('bodypain', 'Body pain', Icons.accessibility, ['general'], ['child']),
-    HealthProblem('stomach', 'Stomach pain', Icons.restaurant_outlined, ['stomach', 'general'], ['child']),
+    HealthProblem('stomach', 'Stomach pain', MedIcons.stomachPain, ['stomach', 'general'], ['child']),
     HealthProblem('vomiting', 'Vomiting', Icons.sick, ['general', 'stomach'], ['child']),
-    HealthProblem('loose', 'Loose motions', Icons.wc, ['general', 'stomach'], ['child']),
+    HealthProblem('loose', 'Loose motions', MedIcons.looseMotions, ['general', 'stomach'], ['child']),
     HealthProblem('constipation', 'Constipation', Icons.hourglass_bottom, ['stomach', 'general'], ['child']),
     HealthProblem('acidity', 'Acidity / burning chest', Icons.local_fire_department_outlined, ['stomach', 'general'], ['child']),
-    HealthProblem('chest', 'Chest pain', Icons.favorite_border, ['heart'], ['child'], danger: true),
-    HealthProblem('breathing', 'Breathing problem', Icons.air, ['lungs', 'general'], ['child'], danger: true),
+    HealthProblem('chest', 'Chest pain', MedIcons.chestPain, ['heart'], ['child'], danger: true),
+    HealthProblem('breathing', 'Breathing problem', MedIcons.breathing, ['lungs', 'general'], ['child'], danger: true),
     HealthProblem('dizzy', 'Dizziness', Icons.cyclone, ['general', 'brain'], ['child']),
     HealthProblem('joint', 'Joint pain', Icons.directions_walk, ['bone'], ['bone', 'child']),
     HealthProblem('back', 'Back pain', Icons.airline_seat_recline_normal, ['bone'], ['bone']),
     HealthProblem('rash', 'Skin rash', Icons.face_retouching_natural, ['skin'], ['skin', 'child']),
     HealthProblem('itching', 'Itching', Icons.back_hand_outlined, ['skin'], ['skin', 'child']),
     HealthProblem('pimples', 'Pimples', Icons.face, ['skin'], ['skin']),
-    HealthProblem('hair', 'Hair fall', Icons.content_cut, ['skin'], ['skin']),
-    HealthProblem('eyered', 'Red eyes', Icons.visibility_outlined, ['eye'], ['eye']),
-    HealthProblem('eyepain', 'Eye pain', Icons.remove_red_eye_outlined, ['eye'], ['eye']),
+    HealthProblem('hair', 'Hair fall', MedIcons.hairFall, ['skin'], ['skin']),
+    HealthProblem('eyered', 'Red eyes', MedIcons.redEyes, ['eye'], ['eye']),
+    HealthProblem('eyepain', 'Eye pain', MedIcons.eyePain, ['eye'], ['eye']),
     HealthProblem('ear', 'Ear pain', Icons.hearing, ['ent'], ['ent', 'child']),
     HealthProblem('tooth', 'Tooth pain', Icons.emoji_emotions_outlined, ['teeth'], ['teeth']),
     HealthProblem('urine', 'Urine problem', Icons.water_drop_outlined, ['kidney', 'general'], ['child']),

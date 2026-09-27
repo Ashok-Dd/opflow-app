@@ -1,0 +1,8 @@
+OpflowIcons.ttf — OPflow's medical icon font.
+
+- Organ and symptom icons (heart, lungs, stomach, intestinal pain, diarrhea, asthma, dry eyes, eye, head, ribbon):
+  Healthicons, https://healthicons.org — icons released under CC0 1.0 (public domain); code MIT License.
+  "Hair fall" adds three drawn strands to the Healthicons head.
+- Rib cage: Google Material Symbols Outlined, Apache License 2.0 (https://github.com/google/material-design-icons).
+
+Built with fontTools + skia-pathops (SVG to TrueType, even-odd shapes converted to non-zero winding).

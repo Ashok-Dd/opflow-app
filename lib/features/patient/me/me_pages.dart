@@ -2,6 +2,8 @@ import '../../../l10n/lang.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:lottie/lottie.dart';
 
 import '../../../core/errors.dart';
 import '../../../data/places.dart';
@@ -371,69 +373,133 @@ class PlaceScreen extends ConsumerStatefulWidget {
   ConsumerState<PlaceScreen> createState() => _PlaceScreenState();
 }
 
-/// The patient's area: from the phone's location, or picked from the list. Also opened from sign-up.
+enum _Find { idle, finding, found, trouble }
+
+/// The patient's area, from the phone's location only (no list of places). Also opened from sign-up.
 class _PlaceScreenState extends ConsumerState<PlaceScreen> {
-  final _q = TextEditingController();
+  _Find _state = _Find.idle;
+  Place? _found;
+  LocationProblem? _problem;
 
-  @override
-  void dispose() {
-    _q.dispose();
-    super.dispose();
-  }
-
-  void _pick(Place p) {
-    ref.read(sessionProvider).setPlace(p);
-    showToast(context, 'Area set to {0}'.trf([p.label]));
-    context.popOr('/me');
-  }
-
-  Future<void> _useLocation() async {
-    Place? found;
-    String? problem;
-    await runWithLoader(context, 'Finding your area…'.tr, () async {
-      try {
-        found = await placeFromPhone();
-      } on LocationProblem catch (e) {
-        problem = e.message;
-      } catch (_) {
-        problem = 'Could not find your location. Please choose your area from the list.';
-      }
+  Future<void> _locate() async {
+    setState(() {
+      _state = _Find.finding;
+      _problem = null;
     });
-    if (!mounted) return;
-    if (found != null) {
-      _pick(found!);
-    } else if (problem != null) {
-      showError(context, problem!, icon: Icons.location_off_outlined);
+    try {
+      final p = await placeFromPhone();
+      if (!mounted) return;
+      ref.read(sessionProvider).setPlace(p); // saved at once; doctors near here load again
+      setState(() {
+        _found = p;
+        _state = _Find.found;
+      });
+    } on LocationProblem catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _problem = e;
+        _state = _Find.trouble;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _problem = const LocationProblem(LocationTrouble.failed, 'Could not find your location. Please try again in an open place.');
+        _state = _Find.trouble;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final current = ref.watch(sessionProvider).place;
-    final q = _q.text.trim().toLowerCase();
-    final list = places.where((p) => p.label.toLowerCase().contains(q)).toList();
+    final session = ref.watch(sessionProvider);
+    final saved = session.place;
+    final found = _found;
     return OpPage(
       title: 'Your area'.tr,
       body: ListView(
-        padding: const EdgeInsets.all(OpSpace.gutter),
+        padding: const EdgeInsets.fromLTRB(OpSpace.gutter, 8, OpSpace.gutter, 28),
         children: [
-          Text('Doctors near this area are shown first.'.tr, style: OpText.body.copyWith(color: OpColors.inkSoft)),
-          const SizedBox(height: 16),
-          OpButton.secondary(label: 'Use my location'.tr, icon: Icons.my_location, onPressed: _useLocation),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _q,
-            onChanged: (_) => setState(() {}),
-            decoration: InputDecoration(hintText: 'Search your area or town'.tr, prefixIcon: Icon(Icons.search)),
+          Center(
+            child: SizedBox(
+              width: 220,
+              height: 220,
+              child: Lottie.asset('assets/lottie/locate.json', animate: !OpMotion.reduced, repeat: true, frameRate: FrameRate.max),
+            ),
           ),
-          const SizedBox(height: 16),
-          if (list.isEmpty)
-            Text('No match. Try "Use my location", or pick the nearest town.'.tr, style: OpText.small)
-          else
-            MenuGroup(children: [
-              for (final p in list)
-                MenuRow(icon: p.label == current ? Icons.check_circle : Icons.place_outlined, title: p.label, onTap: () => _pick(p)),
-            ]),
+          Text(
+            _state == _Find.found ? 'You are here'.tr : 'Find doctors near you'.tr,
+            textAlign: TextAlign.center,
+            style: OpText.display.copyWith(fontSize: 30),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _state == _Find.finding
+                ? 'Finding your location…'.tr
+                : 'OPflow uses your location only to show the doctors and hospitals closest to you.'.tr,
+            textAlign: TextAlign.center,
+            style: OpText.body.copyWith(color: OpColors.inkSoft),
+          ),
+          const SizedBox(height: 22),
+          if (_state == _Find.found && found != null) ...[
+            OpCard(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(color: OpColors.mint, borderRadius: OpRadius.controlAll),
+                    child: const Icon(Icons.place, color: OpColors.forest),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(found.label, style: OpText.heading.copyWith(fontSize: 19)),
+                        const SizedBox(height: 2),
+                        Text(
+                          MockData.hospitals.any((h) => h.lat != null)
+                              ? '{0} near you (within 10 km)'.trf([doctorsCount(doctorsNear(found.lat, found.lng))])
+                              : 'Doctors near here are shown first.'.tr,
+                          style: OpText.small.copyWith(color: OpColors.fern, fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            OpButton(label: 'Done'.tr, icon: Icons.check, onPressed: () => context.popOr('/me')),
+            const SizedBox(height: 10),
+            OpButton(label: 'Find my location again'.tr, kind: OpButtonKind.quiet, onPressed: _locate),
+          ] else if (_state == _Find.trouble && _problem != null) ...[
+            InfoBox(icon: Icons.location_off_outlined, tone: Tone.bad, child: Text(_problem!.message.tr)),
+            const SizedBox(height: 14),
+            if (_problem!.trouble == LocationTrouble.off)
+              OpButton(label: 'Turn on location'.tr, icon: Icons.settings, onPressed: () => Geolocator.openLocationSettings())
+            else if (_problem!.trouble == LocationTrouble.blocked)
+              OpButton(label: 'Open settings'.tr, icon: Icons.settings, onPressed: () => Geolocator.openAppSettings()),
+            const SizedBox(height: 10),
+            OpButton(
+              label: 'Try again'.tr,
+              icon: Icons.my_location,
+              kind: _problem!.trouble == LocationTrouble.off || _problem!.trouble == LocationTrouble.blocked ? OpButtonKind.secondary : OpButtonKind.primary,
+              onPressed: _locate,
+            ),
+          ] else ...[
+            OpButton(
+              label: _state == _Find.finding ? 'Finding…'.tr : 'Use my current location'.tr,
+              icon: Icons.my_location,
+              loading: _state == _Find.finding,
+              onPressed: _state == _Find.finding ? null : _locate,
+            ),
+            if (saved.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              Text('Your area now: {0}'.trf([saved]), textAlign: TextAlign.center, style: OpText.small),
+            ],
+          ],
         ],
       ),
     );

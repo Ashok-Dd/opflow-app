@@ -51,6 +51,7 @@ dependencies:
   socket_io_client: ^3.1.6
   sentry_flutter: ^9.0.0
   url_launcher: ^6.3.2
+  lottie: ^3.3.3
 
 dev_dependencies:
   flutter_test:
@@ -73,6 +74,7 @@ flutter:
 
   assets:
     - assets/roles/
+    - assets/lottie/
 
   fonts:
     - family: Newsreader
@@ -93,6 +95,10 @@ flutter:
           weight: 600
     # Telugu letters (the fonts above have none). Used as a fallback, so English keeps its own fonts.
     # Noto Sans Telugu, SIL Open Font License 1.1.
+    # Medical icons (Healthicons CC0 + Material Symbols rib cage; see OpflowIcons-LICENSE.txt).
+    - family: OpflowIcons
+      fonts:
+        - asset: assets/fonts/OpflowIcons.ttf
     - family: NotoSansTelugu
       fonts:
         - asset: assets/fonts/NotoSansTelugu.ttf

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -34,6 +35,8 @@ class SessionStore extends ChangeNotifier {
   bool profileDone = false;
   /// The patient's area, asked at sign-up ("Brodipet, Guntur"). Empty until chosen.
   String place = '';
+  /// A random id kept for as long as the app is installed (sent with sign-ins; not personal).
+  static String installId = '';
   double? placeLat;
   double? placeLng;
 
@@ -59,6 +62,13 @@ class SessionStore extends ChangeNotifier {
     place = p.getString('place') ?? '';
     placeLat = p.getDouble('placeLat');
     placeLng = p.getDouble('placeLng');
+    // One random id per install: the server knows it is the same phone when it signs in again.
+    installId = p.getString('installId') ?? '';
+    if (installId.length < 16) {
+      final r = math.Random.secure();
+      installId = 'app-${List.generate(28, (_) => r.nextInt(16).toRadixString(16)).join()}';
+      await p.setString('installId', installId);
+    }
     _doctorPassword = p.getString('doctorPassword') ?? 'demo1234';
     doctorPasswordChanged = p.getBool('doctorPasswordChanged') ?? false;
     doctorId = p.getString('doctorId');
@@ -155,7 +165,7 @@ class SessionStore extends ChangeNotifier {
 
   Future<bool> _exchange(String code) async {
     loginMessage = null;
-    final device = {'platform': _platform, 'appVersion': AppConfig.appVersion};
+    final device = {'platform': _platform, 'appVersion': AppConfig.appVersion, 'installId': installId};
     try {
       final r = Map<String, dynamic>.from(await (otpMode == 'sms'
           ? Api.instance.post('/v1/auth/patient/otp/verify', {'phone': _e164, 'code': code, 'device': device}, false)
@@ -173,10 +183,9 @@ class SessionStore extends ChangeNotifier {
         gender = _cap(profile['gender'] as String);
         final saved = profile['place'] as String?;
         if (saved != null && saved.isNotEmpty) {
-          final known = placeByLabel(saved);
           place = saved;
-          placeLat = known?.lat;
-          placeLng = known?.lng;
+          placeLat = (profile['placeLat'] as num?)?.toDouble();
+          placeLng = (profile['placeLng'] as num?)?.toDouble();
         }
       }
       side = Side.patient;
@@ -196,7 +205,7 @@ class SessionStore extends ChangeNotifier {
 
   Future<void> saveProfile({required String name, required int age, required String gender}) async {
     if (AppConfig.isApi) {
-      await Api.instance.patch('/v1/me', {'name': name.trim(), 'age': age, 'gender': gender.toLowerCase(), 'place': place});
+      await Api.instance.patch('/v1/me', {'name': name.trim(), 'age': age, 'gender': gender.toLowerCase(), ..._placeBody});
     } else {
       await Future.delayed(OpMotion.fakeShort);
     }
@@ -208,6 +217,9 @@ class SessionStore extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// The area and its point, as the server keeps them with the profile.
+  Map<String, Object?> get _placeBody => {'place': place, if (placeLat != null && placeLng != null) ...{'placeLat': placeLat, 'placeLng': placeLng}};
+
   /// The patient's area. Doctors "near you" are counted from it; the server keeps it with the profile.
   void setPlace(Place p) {
     place = p.label;
@@ -218,7 +230,7 @@ class SessionStore extends ChangeNotifier {
     if (!AppConfig.isApi) return;
     if (side == Side.patient && profileDone) {
       unawaited(Api.instance
-          .patch('/v1/me', {'name': name.trim(), 'age': age, 'gender': gender.toLowerCase(), 'place': place})
+          .patch('/v1/me', {'name': name.trim(), 'age': age, 'gender': gender.toLowerCase(), ..._placeBody})
           .catchError((_) => null));
     }
     unawaited(Remote.instance.loadDirectory());
@@ -241,7 +253,7 @@ class SessionStore extends ChangeNotifier {
       final r = Map<String, dynamic>.from(await Api.instance.post('/v1/auth/doctor/login', {
         'loginId': id.trim().toUpperCase(),
         'password': password,
-        'device': {'platform': _platform, 'appVersion': AppConfig.appVersion},
+        'device': {'platform': _platform, 'appVersion': AppConfig.appVersion, 'installId': installId},
       }, false) as Map);
       doctorId = (r['doctor'] as Map?)?['id'] as String?;
       if (r['mustChange'] == true) {
@@ -271,7 +283,7 @@ class SessionStore extends ChangeNotifier {
         final r = Map<String, dynamic>.from(await Api.instance.post('/v1/auth/doctor/set-password', {
           'changeToken': _changeToken,
           'newPassword': password,
-          'device': {'platform': _platform, 'appVersion': AppConfig.appVersion},
+          'device': {'platform': _platform, 'appVersion': AppConfig.appVersion, 'installId': installId},
         }, false) as Map);
         _changeToken = null;
         await Api.instance.saveTokens(r);
