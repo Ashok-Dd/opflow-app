@@ -1010,4 +1010,6 @@ const te = <String, String>{
   'We are still confirming your payment. Please check Me → My doctor suggestions in a minute. If money was taken and there is no suggestion, it comes back automatically.': 'మీ పేమెంట్‌ను ఇంకా నిర్ధారిస్తున్నాం. ఒక నిమిషంలో నేను → నా డాక్టర్ సూచనలు చూడండి. డబ్బు తీసుకుని సూచన లేకపోతే, అది ఆటోమేటిక్‌గా తిరిగి వస్తుంది.',
   'OPflow has no suggestions for this type of doctor near you yet. We will not charge you. You can still see every {0} near you.': 'మీ దగ్గర ఈ రకం డాక్టర్లకు OPflow దగ్గర ఇంకా సూచనలు లేవు. మీ దగ్గర డబ్బు తీసుకోము. మీ దగ్గర ఉన్న అన్ని {0}లను చూడవచ్చు.',
   'Set': 'సెట్ చేయండి',
+  'Pay {0} · See my doctors': '{0} చెల్లించండి · నా డాక్టర్లను చూడండి',
+  'Please tick the box above to agree first.': 'ముందుగా పైన ఉన్న బాక్స్‌ను టిక్ చేసి అంగీకరించండి.',
 };

@@ -265,7 +265,11 @@ class _PickOfferScreenState extends ConsumerState<PickOfferScreen> {
                 children: [
                   Text('{0} · Personalized recommendation'.trf([o.priceText]), style: OpText.smallStrong),
                   const SizedBox(height: 8),
-                  OpButton(label: 'Find My Doctor · {0}'.trf([o.priceText]), icon: Icons.lock_outline, onPressed: _agree ? _pay : null),
+                  OpButton(
+                    label: 'Pay {0} · See my doctors'.trf([o.priceText]),
+                    icon: Icons.lock_outline,
+                    onPressed: () => _agree ? _pay() : showError(context, 'Please tick the box above to agree first.'.tr),
+                  ),
                 ],
               ),
             ),
