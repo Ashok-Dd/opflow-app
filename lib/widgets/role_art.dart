@@ -4,10 +4,9 @@ import 'package:flutter/material.dart';
 
 import '../theme/tokens.dart';
 
-/// Friendly drawn portraits for the "Who are you?" screen: a doctor in a white coat with a stethoscope, and a
-/// patient holding their OPflow token slip. Drawn in code (sharp at any size, in the app's own colours).
-///
-/// [t] (0–1, repeating) gives a little life: the doctor's stethoscope beats, the patient's token glows.
+/// The pictures on the "Who are you?" screen: assets/roles/doctor.png and patient.png (the user's own pictures).
+/// Until a picture file is there, a portrait drawn in code is shown instead (a doctor in a white coat, and a
+/// patient holding their OPflow token slip); [t] (0–1, repeating) gives the drawing a little life.
 class RoleArt extends StatelessWidget {
   const RoleArt.doctor({super.key, this.t = 0}) : doctor = true;
   const RoleArt.patient({super.key, this.t = 0}) : doctor = false;
@@ -17,7 +16,14 @@ class RoleArt extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(painter: doctor ? _DoctorPainter(t) : _PatientPainter(t), size: Size.infinite);
+    return Image.asset(
+      doctor ? 'assets/roles/doctor.png' : 'assets/roles/patient.png',
+      fit: BoxFit.cover,
+      width: double.infinity,
+      height: double.infinity,
+      filterQuality: FilterQuality.medium,
+      errorBuilder: (_, _, _) => CustomPaint(painter: doctor ? _DoctorPainter(t) : _PatientPainter(t), size: Size.infinite),
+    );
   }
 }
 

@@ -192,16 +192,12 @@ class _RoleCardState extends State<_RoleCard> with SingleTickerProviderStateMixi
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AspectRatio(
-                  aspectRatio: 1,
+                  aspectRatio: 0.8, // the pictures are portrait (4 : 5)
                   child: ClipRRect(
                     borderRadius: OpRadius.controlAll,
                     child: AnimatedBuilder(
                       animation: _life,
-                      builder: (context, _) {
-                        // A slow breath: the figure rises and settles.
-                        final y = -2.0 * (0.5 - (0.5 - _life.value).abs()) * 2;
-                        return Transform.translate(offset: Offset(0, y), child: widget.art(_life.value));
-                      },
+                      builder: (context, _) => widget.art(_life.value),
                     ),
                   ),
                 ),
