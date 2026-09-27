@@ -18,7 +18,7 @@ typedef CheckoutResult = Map<String, String>;
 /// OPflow's logo in Razorpay's window (without it Razorpay shows the letter "O").
 const _logo = 'https://opflow-alpha.vercel.app/icons/Icon-192.png';
 
-Future<CheckoutResult> payOrder(Map<String, dynamic> payment, {required String description, bool fail = false, String? phone, String? bookingId}) async {
+Future<CheckoutResult> payOrder(Map<String, dynamic> payment, {required String description, bool fail = false, String? phone, String? bookingId, String? pickId}) async {
   if (payment['fake'] == true) {
     final r = await Api.instance.post('/v1/dev/razorpay/pay', {'orderId': payment['orderId'], 'fail': fail}, false);
     return Map<String, String>.from((r as Map).map((k, v) => MapEntry('$k', '$v')));
@@ -39,9 +39,10 @@ Future<CheckoutResult> payOrder(Map<String, dynamic> payment, {required String d
         'image': '${Uri.base.origin}/icons/Icon-192.png',
         'prefill': {'contact': ?phone},
         'theme': {'color': '#1F7A5C'},
-        if (bookingId != null) ...{
+        if (bookingId != null || pickId != null) ...{
           'redirect': true,
-          'callback_url': '${AppConfig.apiBase}/v1/payments/return?b=$bookingId&to=${Uri.encodeComponent(back)}',
+          'callback_url':
+              '${AppConfig.apiBase}/v1/payments/return?${bookingId != null ? 'b=$bookingId' : 'p=$pickId'}&to=${Uri.encodeComponent(back)}',
         },
       }).timeout(const Duration(minutes: 12));
     } on WebPayClosed {

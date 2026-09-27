@@ -13,6 +13,7 @@ import '../../../theme/tokens.dart';
 import '../../../widgets/bits.dart';
 import '../../../widgets/op_button.dart';
 import '../../../widgets/token_board.dart';
+import '../picks/picks_screens.dart';
 import '../widgets.dart';
 
 class BookingDetailScreen extends ConsumerWidget {
@@ -98,6 +99,10 @@ class BookingDetailScreen extends ConsumerWidget {
                 icon: Icons.currency_rupee,
                 child: Text('The doctor cancelled this visit. Your full {0} is sent back. It reaches your account in 5–7 days.'.trf([rupees(b.total)])),
               ),
+            ],
+            if (b.status == BookingStatus.done) ...[
+              const SizedBox(height: 16),
+              VisitFeedbackCard(bookingId: b.id, doctorName: d.name),
             ],
             if (b.status == BookingStatus.missed) ...[
               const SizedBox(height: 16),

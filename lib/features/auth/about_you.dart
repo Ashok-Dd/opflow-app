@@ -91,12 +91,12 @@ class _AboutYouScreenState extends ConsumerState<AboutYouScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        place.isEmpty ? 'Use my location or choose' : place,
+                        place.isEmpty ? 'Use my location'.tr : place,
                         style: place.isEmpty ? OpText.body.copyWith(color: OpColors.inkSoft) : OpText.bodyStrong,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    Text(place.isEmpty ? 'Choose' : 'Change', style: OpText.smallStrong.copyWith(color: OpColors.fern)),
+                    Text(place.isEmpty ? 'Set'.tr : 'Change'.tr, style: OpText.smallStrong.copyWith(color: OpColors.fern)),
                   ],
                 ),
               ),

@@ -166,6 +166,19 @@ class Remote extends ChangeNotifier {
 
   (DateTime, TimeWindow)? nextFree(String doctorId) => _nextFree[doctorId];
 
+  /// A doctor card that came with another answer (OPflow's suggestions): known to every list and card.
+  Doctor rememberDoctorCard(Map<String, dynamic> c) {
+    final d = doctorFrom(c);
+    if (c['nextFree'] != null) _nextFree[d.id] = _nextFreeFrom(c['nextFree']);
+    final i = MockData.doctors.indexWhere((x) => x.id == d.id);
+    if (i >= 0) {
+      MockData.doctors[i] = d;
+    } else {
+      MockData.doctors.add(d);
+    }
+    return d;
+  }
+
   /// Hours of one day. Returns what is known now and fetches the rest; listeners are told when it arrives.
   List<TimeWindow> windows(String doctorId, DateTime day) {
     final key = '$doctorId|${ymd(day)}';

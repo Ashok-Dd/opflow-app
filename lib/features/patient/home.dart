@@ -15,6 +15,7 @@ import '../../theme/text.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/bits.dart';
 import '../../widgets/doctor_card.dart';
+import 'picks/picks_screens.dart';
 import '../../widgets/doctor_portrait.dart';
 import '../../widgets/op_button.dart';
 import '../../widgets/page_header.dart';
@@ -172,6 +173,8 @@ class HomeTab extends ConsumerWidget {
           _WayRow(icon: Icons.sick_outlined, title: 'By health problem'.tr, text: 'Fever, cough, stomach pain …'.tr, onTap: () => context.go('/find?tab=1')),
           const SizedBox(height: 10),
           _WayRow(icon: Icons.local_hospital_outlined, title: 'By hospital name'.tr, text: 'Hospitals near you'.tr, onTap: () => context.go('/find?tab=2')),
+          // "Find Your Right Doctor" (hidden when the admin switched it off)
+          const RightDoctorCard(),
           const SizedBox(height: 32),
 
           // Common doctors

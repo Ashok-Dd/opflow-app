@@ -18,6 +18,7 @@ import '../features/doctor/timings.dart';
 import '../features/doctor/today.dart';
 import '../features/patient/booking/booking_flow.dart';
 import '../features/patient/booking/pay_return.dart';
+import '../features/patient/picks/picks_screens.dart';
 import '../features/patient/booking/change_time.dart';
 import '../features/patient/bookings/booking_detail.dart';
 import '../features/patient/bookings/bookings.dart';
@@ -148,6 +149,16 @@ final appRouter = GoRouter(
           () => BookingFlow(doctorId: d!.id, hospitalId: h != null && d.hospitalIds.contains(h) ? h : null));
     }),
     _r('/booking/:id', (s) => BookingDetailScreen(bookingId: s.pathParameters['id']!)),
+    _r('/right-doctor', (s) => const RightDoctorScreen()),
+    _r('/right-doctor/result/:id', (s) => PickResultScreen(id: s.pathParameters['id']!)),
+    _r('/right-doctor/:type', (s) => _ifExists(MockData.findType(s.pathParameters['type']!) != null, 'type of doctor',
+        () => PickOfferScreen(typeId: s.pathParameters['type']!))),
+    _r('/me/suggestions', (s) => const MyPicksScreen()),
+    _r('/pick-return', (s) {
+      final p = s.uri.queryParameters['p'] ?? '';
+      if (!RegExp(r'^[0-9a-f-]{36}$').hasMatch(p)) return const NotFoundScreen(what: 'payment');
+      return PickReturnScreen(id: p, checkoutSaidPaid: s.uri.queryParameters['ok'] == '1');
+    }),
     _r('/pay-return', (s) {
       final b = s.uri.queryParameters['b'] ?? '';
       // Only a real booking id; anything else is a broken link (never waits for the doctor list).

@@ -8,6 +8,8 @@ import '../mock/data.dart';
 import '../mock/format.dart';
 import '../mock/models.dart';
 import 'patient_store.dart';
+import 'picks.dart';
+import '../data/config.dart';
 import 'session.dart';
 
 /// The patient side on the real API. Same methods as [PatientStore], so the screens don't change.
@@ -311,6 +313,140 @@ class ApiPatientStore extends PatientStore {
   @override
   Future<Booking?> settleReturned(String bookingId, {required bool checkoutSaidPaid}) =>
       _settle(bookingId, '', checkoutSucceeded: checkoutSaidPaid);
+
+  // ── "Find Your Right Doctor" ──────────────────────────────────────────────────────────────────────
+
+  String get _near {
+    final s = SessionStore.instance;
+    return '${s.placeLat ?? AppConfig.nearLat},${s.placeLng ?? AppConfig.nearLng}';
+  }
+
+  static int _paise(Object? m) => ((m as Map?)?['paise'] as num?)?.toInt() ?? 0;
+  static String _display(Object? m) => ((m as Map?)?['display'] as String?) ?? rupees(_paise(m) / 100);
+
+  @override
+  Future<PickInfo> pickInfo() async {
+    final r = Map<String, dynamic>.from(await _api.get('/v1/picks/info') as Map);
+    return PickInfo(enabled: r['enabled'] == true, pricePaise: _paise(r['price']), priceText: _display(r['price']), max: (r['max'] as num?)?.toInt() ?? 3);
+  }
+
+  @override
+  Future<PickOffer> pickOffer(String typeId) async {
+    final r = Map<String, dynamic>.from(await _api.get('/v1/picks/offer', query: {'type': typeId, 'near': _near}) as Map);
+    return PickOffer(
+      enabled: r['enabled'] == true,
+      typeId: typeId,
+      typeName: (r['typeName'] as String?) ?? MockData.type(typeId).simple,
+      pricePaise: _paise(r['price']),
+      priceText: _display(r['price']),
+      criteria: (r['criteria'] as String?) ?? PatientStore.pickCriteria,
+      available: (r['available'] as num?)?.toInt() ?? 0,
+      max: (r['max'] as num?)?.toInt() ?? 3,
+    );
+  }
+
+  PickResult _pick(Map<String, dynamic> r) => PickResult(
+        id: r['id'] as String,
+        typeId: r['typeId'] as String,
+        typeName: (r['typeName'] as String?) ?? '',
+        status: r['status'] as String,
+        place: r['place'] as String?,
+        paidAt: DateTime.tryParse('${r['paidAt']}')?.toLocal(),
+        amountText: _display(r['amount']),
+        refundReason: r['refundReason'] as String?,
+        doctors: [
+          for (final raw in ((r['doctors'] as List?) ?? const []).cast<Map>())
+            PickDoctor(
+              doctor: Remote.instance.rememberDoctorCard(Map<String, dynamic>.from(raw['doctor'] as Map)),
+              reasons: ((raw['reasons'] as List?) ?? const []).cast<String>(),
+              distanceKm: (((raw['distanceM'] as num?) ?? 0) / 100).round() / 10,
+            ),
+        ],
+      );
+
+  /// Opens the order → Razorpay (phone SDK, or the web page) → the server confirms and makes the list.
+  /// Null when the payment did not go through (no money taken).
+  @override
+  Future<PickResult?> buyPick(String typeId, {bool fail = false}) async {
+    final s = SessionStore.instance;
+    final r = Map<String, dynamic>.from(await _api.postOnce('/v1/picks/purchase', {
+      'type': typeId,
+      'near': _near,
+      if (s.place.isNotEmpty) 'place': s.place,
+      'consent': true,
+    }) as Map);
+    final id = (r['purchase'] as Map)['id'] as String;
+    final payment = Map<String, dynamic>.from(r['payment'] as Map);
+    CheckoutResult? paid;
+    try {
+      paid = await payOrder(payment, description: 'OPflow doctor suggestion', fail: fail, phone: _phone, pickId: id);
+    } on ApiException {
+      // Not proof of "not paid" (UPI can report a failure after taking money): the server decides below.
+    }
+    if (paid != null) {
+      try {
+        final v = _pick(Map<String, dynamic>.from(await _api.post('/v1/picks/verify', paid) as Map));
+        if (v.status != 'pending_payment') return v;
+      } on ApiException {
+        // Settle it below.
+      }
+    }
+    return _settlePick(id, checkoutSucceeded: paid != null);
+  }
+
+  @override
+  Future<PickResult?> settlePickReturn(String id, {required bool checkoutSaidPaid}) => _settlePick(id, checkoutSucceeded: checkoutSaidPaid);
+
+  Future<PickResult?> _settlePick(String id, {required bool checkoutSucceeded}) async {
+    var reached = false;
+    for (var i = 0; i < 6; i++) {
+      try {
+        final r = _pick(Map<String, dynamic>.from(await _api.post('/v1/picks/$id/check') as Map));
+        reached = true;
+        if (r.paid || r.refunded) return r;
+        if (!checkoutSucceeded && i >= 1) return null;
+      } on ApiException {
+        // No answer this time; try again shortly.
+      }
+      await Future<void>.delayed(Duration(seconds: i < 2 ? 2 : 3));
+    }
+    if (reached && !checkoutSucceeded) return null;
+    throw ApiException(
+      'PAYMENT_UNSURE',
+      'We are still confirming your payment. Please check Me → My doctor suggestions in a minute. If money was taken and there is no suggestion, it comes back automatically.',
+      retryable: true,
+    );
+  }
+
+  @override
+  Future<PickResult> pickResult(String id) async => _pick(Map<String, dynamic>.from(await _api.get('/v1/picks/$id') as Map));
+
+  @override
+  Future<List<PickSummary>> myPicks() async {
+    final r = Map<String, dynamic>.from(await _api.get('/v1/picks/mine') as Map);
+    return [
+      for (final raw in (r['items'] as List).cast<Map>())
+        PickSummary(
+          id: raw['id'] as String,
+          typeId: raw['typeId'] as String,
+          typeName: raw['typeName'] as String,
+          status: raw['status'] as String,
+          count: (raw['count'] as num?)?.toInt() ?? 0,
+          place: raw['place'] as String?,
+          paidAt: DateTime.tryParse('${raw['paidAt']}')?.toLocal(),
+        ),
+    ];
+  }
+
+  @override
+  Future<void> sendFeedback(String bookingId, int rating, String note) async {
+    try {
+      await _api.post('/v1/bookings/$bookingId/feedback', {'rating': rating, if (note.trim().isNotEmpty) 'note': note.trim()});
+    } on ApiException catch (e) {
+      if (e.code != 'ALREADY_SENT') rethrow; // already told us: the same as done
+    }
+    markRated(bookingId);
+  }
 
   /// Asks the server "was I charged?" a few times (Razorpay's own message can take a few seconds).
   /// Booked → the booking. Clearly not paid → null ("payment did not go through"). Still unknown (no internet)

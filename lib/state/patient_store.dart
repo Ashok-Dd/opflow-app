@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../mock/data.dart';
 import '../mock/format.dart';
@@ -9,6 +10,7 @@ import '../mock/models.dart';
 import '../theme/tokens.dart';
 import '../data/config.dart';
 import 'patient_store_api.dart';
+import 'picks.dart';
 import 'session.dart';
 
 /// The doctor's running status as a patient sees it.
@@ -56,10 +58,13 @@ class PatientStore extends ChangeNotifier {
   PatientStore() {
     _seed();
     _startLiveTicker();
+    loadRated();
   }
 
   /// For [ApiPatientStore]: no sample data and no fake live line.
-  PatientStore.base();
+  PatientStore.base() {
+    loadRated();
+  }
 
   PatientProfile me = const PatientProfile(name: 'Ravi Kumar', age: 42, gender: 'Male');
   final bookings = <Booking>[];
@@ -122,6 +127,87 @@ class PatientStore extends ChangeNotifier {
 
   /// The web version after Razorpay's bank page (redirect mode). Demo mode never redirects.
   Future<Booking?> settleReturned(String bookingId, {required bool checkoutSaidPaid}) async => null;
+
+  // ---------------------------------------------------------------------------
+  // "Find Your Right Doctor" (paid one-time suggestion) and private visit feedback
+
+  static const pickCriteria =
+      "We look at each doctor's qualifications, years of relevant experience, training, areas of practice and feedback from verified OPflow patients. Doctors cannot pay to be suggested. This is a recommendation, not a guarantee of treatment outcome.";
+  final List<PickResult> _picks = [];
+
+  /// Visits the patient already told us about (so "How was your visit?" shows once; kept on the phone).
+  final Set<String> ratedBookings = {};
+
+  Future<void> loadRated() async {
+    try {
+      ratedBookings.addAll((await SharedPreferences.getInstance()).getStringList('ratedBookings') ?? const []);
+      notifyListeners();
+    } catch (_) {}
+  }
+
+  void markRated(String bookingId) {
+    ratedBookings.add(bookingId);
+    notifyListeners();
+    SharedPreferences.getInstance().then((p) => p.setStringList('ratedBookings', ratedBookings.toList())).catchError((_) => false);
+  }
+
+  Future<PickInfo> pickInfo() async => const PickInfo(enabled: true, pricePaise: 9900, priceText: '₹99');
+
+  Future<PickOffer> pickOffer(String typeId) async {
+    await Future.delayed(OpMotion.fakeShort);
+    final t = MockData.type(typeId);
+    return PickOffer(
+      enabled: true,
+      typeId: typeId,
+      typeName: t.simple,
+      pricePaise: 9900,
+      priceText: '₹99',
+      criteria: pickCriteria,
+      available: MockData.doctorsOfType(typeId).length.clamp(0, 3),
+    );
+  }
+
+  /// Demo: pays with the sample Checkout and suggests the most experienced doctors of the type.
+  Future<PickResult?> buyPick(String typeId, {bool fail = false}) async {
+    await Future.delayed(OpMotion.fakeLong);
+    if (fail) return null;
+    final list = [...MockData.doctorsOfType(typeId)]..sort((a, b) => b.years.compareTo(a.years));
+    final r = PickResult(
+      id: 'p${_picks.length + 1}',
+      typeId: typeId,
+      typeName: MockData.type(typeId).simple,
+      status: 'paid',
+      place: SessionStore.instance.place,
+      paidAt: DateTime.now(),
+      amountText: '₹99',
+      doctors: [
+        for (final d in list.take(3))
+          PickDoctor(
+            doctor: d,
+            reasons: [d.degrees, '${d.years} years of experience', 'Speaks ${d.languages.take(2).join(', ')}'],
+            distanceKm: MockData.hospital(d.hospitalIds.first).distanceKm,
+          ),
+      ],
+    );
+    _picks.insert(0, r);
+    notifyListeners();
+    return r;
+  }
+
+  Future<PickResult?> settlePickReturn(String id, {required bool checkoutSaidPaid}) async => null;
+
+  Future<PickResult> pickResult(String id) async => _picks.firstWhere((p) => p.id == id);
+
+  Future<List<PickSummary>> myPicks() async => [
+        for (final p in _picks)
+          PickSummary(id: p.id, typeId: p.typeId, typeName: p.typeName, status: p.status, count: p.doctors.length, place: p.place, paidAt: p.paidAt),
+      ];
+
+  /// "How was your visit?" — only OPflow sees it (it helps choose the doctors OPflow suggests).
+  Future<void> sendFeedback(String bookingId, int rating, String note) async {
+    await Future.delayed(OpMotion.fakeShort);
+    markRated(bookingId);
+  }
 
   /// Fake payment. [fail] lets the UI show the failed screen.
   Future<Booking?> payAndBook({

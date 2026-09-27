@@ -70,6 +70,12 @@ class MeTab extends ConsumerWidget {
               detail: 'All your payments'.tr,
               onTap: () => context.push('/me/payments'),
             ),
+            MenuRow(
+              icon: Icons.medical_services_outlined,
+              title: 'My doctor suggestions'.tr,
+              detail: 'Doctors OPflow suggested for you'.tr,
+              onTap: () => context.push('/me/suggestions'),
+            ),
           ]).staggerIn(1),
           const SizedBox(height: 22),
           const SectionLabel('App settings'),
