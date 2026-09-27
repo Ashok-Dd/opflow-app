@@ -138,6 +138,42 @@ class OpdSummary {
 }
 
 /// The doctor side. All fake; a real API replaces this later.
+/// Where the doctor's account is signed in (GET /v1/doctor/devices).
+class SignedInDevice {
+  const SignedInDevice({required this.id, required this.device, required this.web, required this.thisDevice, required this.lastUsed});
+
+  final String id;
+  final String device;
+  final bool web;
+  final bool thisDevice;
+  final DateTime lastUsed;
+}
+
+/// What the doctor did in a period (GET /v1/doctor/reports).
+class DoctorReport {
+  const DoctorReport({
+    required this.days,
+    required this.sessions,
+    required this.booked,
+    required this.seen,
+    required this.missed,
+    required this.cancelled,
+    required this.emergency,
+    this.avgConsultMinutes,
+    this.showRate,
+  });
+
+  final int days;
+  final int sessions;
+  final int booked;
+  final int seen;
+  final int missed;
+  final int cancelled;
+  final int emergency;
+  final int? avgConsultMinutes;
+  final int? showRate;
+}
+
 class DoctorStore extends ChangeNotifier {
   /// False until the doctor's profile, hospitals and today's line have come from the server (API build).
   bool get isReady => true;
@@ -411,6 +447,12 @@ class DoctorStore extends ChangeNotifier {
 
   final _days = <String, List<LinePatient>>{};
 
+  /// Patients booked on a day, not counting cancelled ones (the day strip).
+  int bookedCount(DateTime day) => bookingsOn(day).where((p) => p.state != PatientState.cancelled).length;
+
+  /// Someone is still coming that day (the leave calendar marks it).
+  bool hasComing(DateTime day) => bookingsOn(day).any((p) => p.state == PatientState.notCome || p.state == PatientState.waiting);
+
   List<LinePatient> bookingsOn(DateTime day) {
     if (sameDay(day, DateTime.now())) return line.where((p) => p.source != Source.emergency).toList();
     final key = '${dateOnly(day).toIso8601String()}|$hospitalId';
@@ -539,17 +581,42 @@ class DoctorStore extends ChangeNotifier {
     return out;
   }
 
-  /// Patients per day for the last 7 days (for the reports chart).
-  List<(DateTime, int, int)> weekReport() {
-    final r = math.Random(5);
-    return [
-      for (var i = 6; i >= 0; i--)
-        () {
-          final d = today().subtract(Duration(days: i));
-          final seen = d.weekday == 7 ? 0 : 18 + r.nextInt(12);
-          return (d, seen, d.weekday == 7 ? 0 : r.nextInt(4));
-        }(),
-    ];
+  /// Phones (and the website) this account is signed in on, with the limits. Demo: just this phone.
+  Future<(List<SignedInDevice>, int, int)> devices() async {
+    await Future.delayed(OpMotion.fakeShort);
+    return (
+      [
+        SignedInDevice(id: 'd1', device: 'This phone', web: false, thisDevice: true, lastUsed: DateTime.now()),
+        SignedInDevice(id: 'd2', device: 'Chrome on Windows', web: true, thisDevice: false, lastUsed: DateTime.now().subtract(const Duration(hours: 5))),
+      ],
+      2,
+      1,
+    );
+  }
+
+  /// Signs another device out (it needs the OPD ID and password to come back).
+  Future<void> signOutDevice(String id) async => Future.delayed(OpMotion.fakeShort);
+
+  /// The doctor's report for the last [days] days (the same figures as the doctor website).
+  Future<DoctorReport> loadReport(int days) async {
+    await Future.delayed(OpMotion.fakeShort);
+    final r = math.Random(days);
+    final sessions = (days * 6 / 7).round();
+    final booked = sessions * (20 + r.nextInt(6));
+    final missed = (booked * 0.06).round();
+    final cancelled = (booked * 0.02).round();
+    final seen = booked - missed - cancelled;
+    return DoctorReport(
+      days: days,
+      sessions: sessions,
+      booked: booked,
+      seen: seen,
+      missed: missed,
+      cancelled: cancelled,
+      emergency: (days / 10).round(),
+      avgConsultMinutes: 7,
+      showRate: ((seen / (seen + missed)) * 100).round(),
+    );
   }
 
   // ---------------------------------------------------------------------------

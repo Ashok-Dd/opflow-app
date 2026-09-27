@@ -435,7 +435,7 @@ class OpSegments extends StatelessWidget {
                     children: [
                       if (icons != null)
                         Icon(icons![i], size: 20, color: i == index ? OpColors.forest : OpColors.inkSoft),
-                      Text(labels[i],
+                      Text(labels[i].tr,
                           textAlign: TextAlign.center,
                           style: OpText.smallStrong.copyWith(
                               fontSize: 13, color: i == index ? OpColors.forest : OpColors.inkSoft)),

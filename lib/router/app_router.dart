@@ -196,6 +196,7 @@ final appRouter = GoRouter(
     _r('/d/me/reports', (s) => const ReportsScreen()),
     _r('/d/me/password', (s) => const ChangePasswordScreen()),
     _r('/d/me/alerts', (s) => const DoctorAlertsScreen()),
+    _r('/d/me/devices', (s) => const DoctorDevicesScreen()),
   ],
 );
 

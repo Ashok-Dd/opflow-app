@@ -178,7 +178,7 @@ class _Month extends StatelessWidget {
                   final past = day.isBefore(now);
                   final off = s.blocksFor(day.weekday).isEmpty;
                   final leave = days.contains(day);
-                  final booked = !past && !off && day.difference(now).inDays < 14 && s.bookingsOn(day).isNotEmpty;
+                  final booked = !past && !off && s.hasComing(day);
                   return InkWell(
                     onTap: past || off ? null : () => onTap(day),
                     borderRadius: OpRadius.smallAll,

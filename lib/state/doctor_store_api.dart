@@ -414,6 +414,39 @@ class ApiDoctorStore extends DoctorStore {
 
   // ── Bookings on any day ────────────────────────────────────────────────────────────────────────
 
+  // Per-day counts for the next 62 days in ONE call (like the doctor website), not one call per day: the
+  // API limits calls per doctor. Fetched again after 30 s while a screen asks.
+  final _counts = <String, (int, int)>{}; // date → (coming, total)
+  DateTime? _countsAt;
+  bool _countsLoading = false;
+
+  void _refreshCounts() {
+    if (_countsLoading || (_countsAt != null && DateTime.now().difference(_countsAt!) < const Duration(seconds: 30))) return;
+    _countsLoading = true;
+    _countsAt = DateTime.now();
+    _api.get('/v1/doctor/bookings/counts', query: {'from': Remote.ymd(DateTime.now()), 'days': '62'}).then((r) {
+      for (final e in ((r as Map)['days'] as List).cast<Map>()) {
+        _counts['${e['date']}'] = (((e['coming'] as num?) ?? 0).toInt(), ((e['total'] as num?) ?? 0).toInt());
+      }
+      notifyListeners();
+    }).catchError((_) {}).whenComplete(() => _countsLoading = false);
+  }
+
+  @override
+  int bookedCount(DateTime day) {
+    if (sameDay(day, DateTime.now())) return super.bookedCount(day); // today: the live line
+    _refreshCounts();
+    return _counts[Remote.ymd(day)]?.$2 ?? 0;
+  }
+
+  @override
+  bool hasComing(DateTime day) {
+    if (sameDay(day, DateTime.now())) return super.hasComing(day);
+    _refreshCounts();
+    return (_counts[Remote.ymd(day)]?.$1 ?? 0) > 0;
+  }
+
+
   /// A day's bookings at EVERY hospital the doctor works at (a doctor at two hospitals must see both).
   /// Today, the hospital on screen comes from the live line (its states change by the minute).
   @override
@@ -484,6 +517,7 @@ class ApiDoctorStore extends DoctorStore {
   /// Cancel one booking: the patient gets all their money back.
   @override
   Future<void> cancelBooking(LinePatient p, String reason) async {
+    _countsAt = null;
     await _api.post('/v1/doctor/bookings/${p.id}/cancel', {'reason': reason.trim().length >= 3 ? reason.trim() : 'Doctor not available'});
     p.state = PatientState.cancelled;
     notifyListeners();
@@ -493,6 +527,7 @@ class ApiDoctorStore extends DoctorStore {
   /// (or gets all their money back after 48 hours).
   @override
   Future<void> changeBooking(LinePatient p, DateTime day, int hour) async {
+    _countsAt = null;
     await _api.post('/v1/doctor/bookings/${p.id}/move', {'reason': 'The doctor changed the time'});
     p
       ..state = PatientState.moved
@@ -512,6 +547,7 @@ class ApiDoctorStore extends DoctorStore {
   /// "I can't come on this day": everyone gets all their money back.
   @override
   Future<(int, int)> cancelDay(DateTime day) async {
+    _countsAt = null;
     final r = Map<String, dynamic>.from(await _api.post('/v1/doctor/days/${Remote.ymd(day)}/cancel', {'reason': 'The doctor is not available on this day'}) as Map);
     leaveDays.add(dateOnly(day));
     _dayCache.remove(Remote.ymd(day));
@@ -546,6 +582,7 @@ class ApiDoctorStore extends DoctorStore {
 
   @override
   Future<void> setLeave(Set<DateTime> days) async {
+    _countsAt = null;
     await _api.put('/v1/doctor/leaves', {
       'days': [for (final d in days) if (!dateOnly(d).isBefore(today())) {'date': Remote.ymd(d)}],
     });
@@ -580,16 +617,44 @@ class ApiDoctorStore extends DoctorStore {
   }
 
   @override
-  List<(DateTime, int, int)> weekReport() {
-    final rows = earnings(7);
-    return [
-      for (var i = 6; i >= 0; i--)
-        () {
-          final d = today().subtract(Duration(days: i));
-          final seen = rows.where((r) => sameDay(r.date, d)).fold<int>(0, (a, r) => a + (int.tryParse(r.patient.split(' ').first) ?? 0));
-          return (d, seen, 0);
-        }(),
-    ];
+  Future<(List<SignedInDevice>, int, int)> devices() async {
+    final r = Map<String, dynamic>.from(await _api.get('/v1/doctor/devices') as Map);
+    return (
+      [
+        for (final e in (r['items'] as List).cast<Map>())
+          SignedInDevice(
+            id: e['id'] as String,
+            device: (e['device'] as String?) ?? 'Phone',
+            web: e['platform'] == 'web',
+            thisDevice: e['thisDevice'] == true,
+            lastUsed: DateTime.tryParse('${e['lastUsedAt']}')?.toLocal() ?? DateTime.now(),
+          ),
+      ],
+      (r['max'] as num?)?.toInt() ?? 2,
+      (r['maxWeb'] as num?)?.toInt() ?? 1,
+    );
+  }
+
+  @override
+  Future<void> signOutDevice(String id) async {
+    await _api.post('/v1/doctor/devices/$id/sign-out', {});
+  }
+
+  @override
+  Future<DoctorReport> loadReport(int days) async {
+    final r = Map<String, dynamic>.from(await _api.get('/v1/doctor/reports', query: {'days': '$days'}) as Map);
+    int n(String k) => (r[k] as num?)?.toInt() ?? 0;
+    return DoctorReport(
+      days: days,
+      sessions: n('sessions'),
+      booked: n('booked'),
+      seen: n('seen'),
+      missed: n('missed'),
+      cancelled: n('cancelled'),
+      emergency: n('emergency'),
+      avgConsultMinutes: (r['avgConsultMinutes'] as num?)?.round(),
+      showRate: (r['showRate'] as num?)?.round(),
+    );
   }
 
   @override

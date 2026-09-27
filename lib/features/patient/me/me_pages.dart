@@ -321,7 +321,7 @@ class RulesScreen extends StatelessWidget {
         padding: const EdgeInsets.all(OpSpace.gutter),
         children: [
           MenuGroup(children: [
-            for (final e in _rulePages.entries) MenuRow(icon: e.value.$2, title: e.value.$1, onTap: () => context.push('/me/rules/${e.key}')),
+            for (final e in _rulePages.entries) MenuRow(icon: e.value.$2, title: e.value.$1.tr, onTap: () => context.push('/me/rules/${e.key}')),
           ]),
         ],
       ),
@@ -338,13 +338,13 @@ class RulePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final page = _rulePages[pageId] ?? _rulePages['terms']!;
     return OpPage(
-      title: page.$1,
+      title: page.$1.tr,
       body: ListView(
         padding: const EdgeInsets.all(OpSpace.gutter),
         children: [
           Icon(page.$2, color: OpColors.fern, size: 40),
           const SizedBox(height: 12),
-          Text(page.$1, style: OpText.display),
+          Text(page.$1.tr, style: OpText.display),
           const SizedBox(height: 18),
           for (final (i, line) in page.$3.indexed)
             Padding(
@@ -353,7 +353,7 @@ class RulePage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(width: 28, child: Text('${i + 1}.', style: OpText.mono(16, weight: FontWeight.w600, color: OpColors.fern))),
-                  Expanded(child: Text(line, style: OpText.body.copyWith(fontSize: 17))),
+                  Expanded(child: Text(line.tr, style: OpText.body.copyWith(fontSize: 17))),
                 ],
               ),
             ),

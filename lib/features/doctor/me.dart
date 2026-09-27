@@ -155,6 +155,7 @@ class DoctorMeTab extends ConsumerWidget {
           MenuRow(icon: Icons.inbox_outlined, title: 'Messages'.tr, detail: 'Bookings, changes, money sent'.tr, onTap: () => context.push('/d/messages')),
           MenuRow(icon: Icons.notifications_none, title: 'Messages settings'.tr, onTap: () => context.push('/d/me/alerts')),
           MenuRow(icon: Icons.lock_outline, title: 'Change password'.tr, onTap: () => context.push('/d/me/password')),
+          MenuRow(icon: Icons.devices_outlined, title: 'Signed in on'.tr, detail: 'Phones and computers using your account'.tr, onTap: () => context.push('/d/me/devices')),
           const LanguageRow(),
           MenuRow(
             icon: Icons.support_agent,
@@ -317,7 +318,7 @@ class _DoctorProfileScreenState extends ConsumerState<DoctorProfileScreen> {
             const SizedBox(height: 18),
             Center(
               child: OpButton(
-                label: d.photoPath == null ? 'Add your photo' : 'Change photo',
+                label: (d.photoPath == null ? 'Add your photo' : 'Change photo').tr,
                 icon: Icons.upload_outlined,
                 expand: false,
                 height: 46,
@@ -648,7 +649,7 @@ class _Mini extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(value, style: OpText.mono(15, weight: FontWeight.w600, color: OpColors.paper)),
-        Text(label, style: OpText.small.copyWith(fontSize: 11.5, color: OpColors.mint)),
+        Text(label.tr, style: OpText.small.copyWith(fontSize: 11.5, color: OpColors.mint)),
       ],
     );
   }
@@ -656,91 +657,84 @@ class _Mini extends StatelessWidget {
 
 // ---------------------------------------------------------------------------
 
-class ReportsScreen extends ConsumerWidget {
+class ReportsScreen extends ConsumerStatefulWidget {
   const ReportsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final s = ref.watch(doctorProvider);
-    final week = s.weekReport();
-    final maxSeen = week.fold<int>(1, (m, e) => e.$2 > m ? e.$2 : m);
-    final totalSeen = week.fold<int>(0, (a, e) => a + e.$2);
-    final totalNo = week.fold<int>(0, (a, e) => a + e.$3);
+  ConsumerState<ReportsScreen> createState() => _ReportsScreenState();
+}
+
+class _ReportsScreenState extends ConsumerState<ReportsScreen> {
+  static const _ranges = [7, 30, 90];
+  int _tab = 1; // 30 days, like the doctor website
+  DoctorReport? _report;
+  Object? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final days = _ranges[_tab];
+    setState(() {
+      _report = null;
+      _error = null;
+    });
+    try {
+      final r = await ref.read(doctorProvider).loadReport(days);
+      if (mounted && _ranges[_tab] == days) setState(() => _report = r);
+    } catch (e) {
+      if (mounted) setState(() => _error = e);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final r = _report;
+    final tiles = r == null
+        ? const <(String, String, Color)>[]
+        : [
+            ('OPDs held', '${r.sessions}', OpColors.ink),
+            ('Patients booked', '${r.booked}', OpColors.ink),
+            ('Patients seen', '${r.seen}', OpColors.fern),
+            ('Did not come', '${r.missed}', OpColors.alarm),
+            ('Cancelled with money back', '${r.cancelled}', OpColors.ink),
+            ('Emergency patients', '${r.emergency}', OpColors.alarm),
+            ('Average time per patient', r.avgConsultMinutes == null ? '—' : '{0} min'.trf([r.avgConsultMinutes!]), OpColors.ink),
+            ('Came when booked', r.showRate == null ? '—' : '${r.showRate}%', OpColors.fern),
+          ];
     return OpPage(
       title: 'Reports'.tr,
-      subtitle: 'Last 7 days'.tr,
+      subtitle: 'Patients, waiting time, did not come'.tr,
       body: ListView(
         padding: const EdgeInsets.all(OpSpace.gutter),
         children: [
-          Row(
-            children: [
-              Expanded(child: _Tile(label: 'Patients seen'.tr, value: '$totalSeen')),
-              const SizedBox(width: 8),
-              Expanded(child: _Tile(label: 'Did not come'.tr, value: '$totalNo', color: OpColors.alarm)),
-            ],
+          OpSegments(
+            labels: [for (final d in _ranges) '{0} days'.trf([d])],
+            index: _tab,
+            onChanged: (i) {
+              setState(() => _tab = i);
+              _load();
+            },
           ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(child: _Tile(label: 'Average waiting'.tr, value: '18 min', color: OpColors.amber)),
-              const SizedBox(width: 8),
-              Expanded(child: _Tile(label: 'Time per patient'.tr, value: '7 min', color: OpColors.fern)),
-            ],
-          ),
-          const SizedBox(height: 22),
-          const SectionLabel('Patients per day'),
-          OpCard(
-            child: SizedBox(
-              // 130 for the bars, plus room for the labels at the phone's text size.
-              height: 148 + MediaQuery.textScalerOf(context).scale(46),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
+          const SizedBox(height: 16),
+          if (_error != null)
+            EmptyState(icon: Icons.wifi_off, title: 'Could not load'.tr, text: friendlyMessage(_error!), action: 'Try again'.tr, onAction: _load)
+          else if (r == null)
+            const Padding(padding: EdgeInsets.only(top: 40), child: Center(child: OpLoader()))
+          else
+            for (var i = 0; i < tiles.length; i += 2) ...[
+              Row(
                 children: [
-                  for (final (day, seen, no) in week)
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Text(seen == 0 ? '–' : '$seen', style: OpText.mono(12, weight: FontWeight.w600)),
-                            const SizedBox(height: 4),
-                            TweenAnimationBuilder<double>(
-                              tween: Tween(begin: 0, end: seen / maxSeen),
-                              duration: const Duration(milliseconds: 700),
-                              curve: OpMotion.curve,
-                              builder: (context, v, _) => Container(
-                                height: 130 * v + 2,
-                                decoration: BoxDecoration(
-                                  color: sameDay(day, DateTime.now()) ? OpColors.forest : OpColors.fern.withValues(alpha: 0.55),
-                                  borderRadius: const BorderRadius.vertical(top: Radius.circular(2)),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(shortDay(day), style: OpText.small.copyWith(fontSize: 11)),
-                            if (no > 0) Text('$no x', style: OpText.mono(10, color: OpColors.alarm)) else const SizedBox(height: 12),
-                          ],
-                        ),
-                      ),
-                    ),
+                  Expanded(child: _Tile(label: tiles[i].$1.tr, value: tiles[i].$2, color: tiles[i].$3)),
+                  const SizedBox(width: 8),
+                  Expanded(child: _Tile(label: tiles[i + 1].$1.tr, value: tiles[i + 1].$2, color: tiles[i + 1].$3)),
                 ],
               ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text('Red number under a day = patients who did not come.'.tr, style: OpText.small.copyWith(fontSize: 12)),
-          const SizedBox(height: 22),
-          const SectionLabel('Running late'),
-          const OpCard(
-            child: Column(
-              children: [
-                KeyValueRow('Days on time', '4 of 6', mono: true),
-                KeyValueRow('Most late', '35 min (Tuesday)', mono: true),
-                KeyValueRow('Average late', '9 min', mono: true),
-              ],
-            ),
-          ),
+              const SizedBox(height: 8),
+            ],
         ],
       ),
     );
@@ -916,6 +910,95 @@ class _DoctorAlertsScreenState extends State<DoctorAlertsScreen> {
                 ),
               ],
             ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Where the account is signed in (the same list as the doctor website's Settings)
+
+class DoctorDevicesScreen extends ConsumerStatefulWidget {
+  const DoctorDevicesScreen({super.key});
+
+  @override
+  ConsumerState<DoctorDevicesScreen> createState() => _DoctorDevicesScreenState();
+}
+
+class _DoctorDevicesScreenState extends ConsumerState<DoctorDevicesScreen> {
+  List<SignedInDevice>? _list;
+  int _max = 2;
+  int _maxWeb = 1;
+  Object? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => _error = null);
+    try {
+      final (list, max, maxWeb) = await ref.read(doctorProvider).devices();
+      if (!mounted) return;
+      setState(() {
+        _list = list;
+        _max = max;
+        _maxWeb = maxWeb;
+      });
+    } catch (e) {
+      if (mounted) setState(() => _error = e);
+    }
+  }
+
+  Future<void> _signOut(SignedInDevice d) async {
+    final ok = await confirmSheet(
+      context,
+      title: 'Sign out this device?'.tr,
+      text: 'It will need the OPD ID and password to come back.'.tr,
+      yes: 'Sign out'.tr,
+      icon: Icons.logout,
+    );
+    if (!ok || !mounted) return;
+    final done = await runStep(context, 'Signing out…'.tr, () => ref.read(doctorProvider).signOutDevice(d.id));
+    if (!done || !mounted) return;
+    setState(() => _list = _list?.where((x) => x.id != d.id).toList());
+    showToast(context, 'Signed out'.tr);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final list = _list;
+    return OpPage(
+      title: 'Signed in on'.tr,
+      body: _error != null
+          ? EmptyState(icon: Icons.wifi_off, title: 'Could not load'.tr, text: friendlyMessage(_error!), action: 'Try again'.tr, onAction: _load)
+          : list == null
+              ? const Center(child: OpLoader())
+              : ListView(
+                  padding: const EdgeInsets.all(OpSpace.gutter),
+                  children: [
+                    Text('Up to {0} phones and {1} computer at a time.'.trf([_max, _maxWeb]), style: OpText.body.copyWith(color: OpColors.inkSoft)),
+                    const SizedBox(height: 14),
+                    MenuGroup(children: [
+                      for (final d in list)
+                        MenuRow(
+                          icon: d.web ? Icons.computer_outlined : Icons.smartphone_outlined,
+                          title: d.device,
+                          detail: d.thisDevice ? 'This one'.tr : 'Last used {0}'.trf([agoLabel(d.lastUsed).toLowerCase()]),
+                          trailing: d.thisDevice
+                              ? const StatusTag('This one', tone: Tone.good)
+                              : TextButton(onPressed: () => _signOut(d), child: Text('Sign out'.tr, style: const TextStyle(color: OpColors.alarm))),
+                        ),
+                    ]),
+                    const SizedBox(height: 14),
+                    InfoBox(
+                      icon: Icons.info_outline,
+                      tone: Tone.calm,
+                      child: Text('New phone refused? Sign out an old phone here, then log in on the new one.'.tr),
+                    ),
+                  ],
+                ),
     );
   }
 }

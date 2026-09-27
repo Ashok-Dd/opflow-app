@@ -230,7 +230,7 @@ class DoctorTile extends StatelessWidget {
             Text(MockData.type(d.typeId).simple, maxLines: 1, overflow: TextOverflow.ellipsis,
                 style: OpText.smallStrong.copyWith(fontSize: 13, color: OpColors.fern)),
             const SizedBox(height: 6),
-            Text(d.bookingsPaused ? 'Bookings paused' : (next == null ? 'Full for 2 weeks' : dayLabel(next.$1)),
+            Text(d.bookingsPaused ? 'Bookings paused'.tr : (next == null ? 'Full for 2 weeks'.tr : dayLabel(next.$1)),
                 maxLines: 1, style: OpText.small.copyWith(fontSize: 12, color: d.bookingsPaused ? OpColors.amber : OpColors.ink)),
             if (next != null)
               Text(windowLabel(next.$2.start), maxLines: 1, overflow: TextOverflow.ellipsis, style: OpText.mono(12.5, weight: FontWeight.w600)),

@@ -102,7 +102,7 @@ class _DoctorBookingsTabState extends ConsumerState<DoctorBookingsTab> {
             itemBuilder: (context, i) {
               final d = today().add(Duration(days: i));
               final sel = sameDay(d, _day);
-              final n = s.bookingsOn(d).where((p) => p.state != PatientState.cancelled).length;
+              final n = s.bookedCount(d);
               // Off only when no hospital has hours that day (or it is leave) and no one is booked.
               final off = n == 0 && (!s.worksOnWeekday(d.weekday) || s.leaveDays.contains(dateOnly(d)));
               return TapScale(
