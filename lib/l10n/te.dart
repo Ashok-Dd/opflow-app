@@ -1074,4 +1074,12 @@ const te = <String, String>{
   'Please update OPflow': 'దయచేసి OPflow ను అప్‌డేట్ చేయండి',
   'This version of the app is too old and cannot book or pay any more. Please install the latest OPflow. Your bookings are safe.': 'ఈ యాప్ వెర్షన్ పాతది, ఇకపై బుక్ చేయలేదు, చెల్లించలేదు. దయచేసి కొత్త OPflow ను ఇన్‌స్టాల్ చేయండి. మీ బుకింగ్‌లు సురక్షితంగా ఉన్నాయి.',
   'Open OPflow on the web': 'వెబ్‌లో OPflow తెరవండి',
+  'Tell OPflow which type of doctor you want to consult. We will suggest the right doctor(s) near you, based on their qualifications, experience, training, areas of practice and patient feedback.': 'మీరు ఏ రకం డాక్టర్‌ను కలవాలనుకుంటున్నారో OPflow కి చెప్పండి. వారి అర్హతలు, అనుభవం, శిక్షణ, ప్రాక్టీస్ విభాగాలు, పేషెంట్ల అభిప్రాయాల ఆధారంగా మీ దగ్గర సరైన డాక్టర్(ల)ను సూచిస్తాం.',
+  'OPflow recommended': 'OPflow సిఫార్సు',
+  'No visit booked yet': 'ఇంకా విజిట్ బుక్ చేయలేదు',
+  'Book your OPD visit now and skip the long waiting line at the hospital.': 'ఇప్పుడే మీ OPD విజిట్ బుక్ చేసి, హాస్పిటల్‌లో పొడవైన క్యూను తప్పించుకోండి.',
+  'Pick the hour that suits you': 'మీకు సరిపడే గంటను ఎంచుకోండి',
+  'Get your token before you leave home': 'ఇంటి నుండి బయలుదేరే ముందే మీ టోకెన్ పొందండి',
+  'Watch the live line and come when it\'s nearly your turn': 'లైవ్ క్యూ చూసి, మీ వంతు దగ్గర పడినప్పుడు రండి',
+  'Book an OPD visit': 'OPD విజిట్ బుక్ చేయండి',
 };

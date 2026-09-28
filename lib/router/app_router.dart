@@ -150,7 +150,7 @@ final appRouter = GoRouter(
     }),
     _r('/booking/:id', (s) => BookingDetailScreen(bookingId: s.pathParameters['id']!)),
     _r('/right-doctor', (s) => const RightDoctorScreen()),
-    _r('/right-doctor/result/:id', (s) => PickResultScreen(id: s.pathParameters['id']!)),
+    _r('/right-doctor/result/:id', (s) => PickResultScreen(id: s.pathParameters['id']!, backHome: s.uri.queryParameters['fresh'] == '1')),
     _r('/right-doctor/:type', (s) => _ifExists(MockData.findType(s.pathParameters['type']!) != null, 'type of doctor',
         () => PickOfferScreen(typeId: s.pathParameters['type']!))),
     _r('/me/suggestions', (s) => const MyPicksScreen()),

@@ -182,6 +182,7 @@ class OpPage extends StatelessWidget {
     this.actions,
     this.background = OpColors.paper,
     this.subtitle,
+    this.onBack,
   });
 
   final String title;
@@ -191,15 +192,19 @@ class OpPage extends StatelessWidget {
   final List<Widget>? actions;
   final Color background;
 
+  /// A back arrow that does this instead of going one screen back (and the phone's back button does the same).
+  final VoidCallback? onBack;
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final page = Scaffold(
       backgroundColor: background,
       appBar: AppBar(
         backgroundColor: background,
         toolbarHeight: subtitle == null ? 60 : 68,
+        leading: onBack == null ? null : IconButton(icon: const Icon(Icons.arrow_back), tooltip: 'Back'.tr, onPressed: onBack),
         // Next to the back arrow, or at the page margin when there is none.
-        titleSpacing: (ModalRoute.of(context)?.canPop ?? false) ? 4 : OpSpace.gutter,
+        titleSpacing: (onBack != null || (ModalRoute.of(context)?.canPop ?? false)) ? 4 : OpSpace.gutter,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -211,6 +216,14 @@ class OpPage extends StatelessWidget {
       ),
       body: body,
       bottomNavigationBar: bottom == null ? null : BottomBar(child: bottom!),
+    );
+    if (onBack == null) return page;
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) onBack!();
+      },
+      child: page,
     );
   }
 }

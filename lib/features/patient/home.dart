@@ -143,6 +143,10 @@ class HomeTab extends ConsumerWidget {
               ),
             ).staggerIn(3),
             const SizedBox(height: 32),
+          ] else ...[
+            const SectionLabel('Your next visit'),
+            const _NoVisitCard().staggerIn(3),
+            const SizedBox(height: 32),
           ],
 
           // Doctors near you
@@ -438,6 +442,43 @@ class _TypeTile extends StatelessWidget {
                 style: OpText.smallStrong.copyWith(fontSize: 12.5, height: 1.15)),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// No visit booked yet: why booking with OPflow is worth it, and one tap to start.
+class _NoVisitCard extends StatelessWidget {
+  const _NoVisitCard();
+
+  @override
+  Widget build(BuildContext context) {
+    Widget point(IconData icon, String text) => Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, size: 18, color: OpColors.fern),
+              const SizedBox(width: 10),
+              Expanded(child: Text(text.tr, style: OpText.small.copyWith(color: OpColors.ink, fontSize: 14))),
+            ],
+          ),
+        );
+    return OpCard(
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('No visit booked yet'.tr, style: OpText.heading.copyWith(fontSize: 20)),
+          const SizedBox(height: 6),
+          Text('Book your OPD visit now and skip the long waiting line at the hospital.'.tr, style: OpText.body.copyWith(color: OpColors.inkSoft)),
+          const SizedBox(height: 14),
+          point(Icons.schedule, 'Pick the hour that suits you'),
+          point(Icons.confirmation_number_outlined, 'Get your token before you leave home'),
+          point(Icons.podcasts, "Watch the live line and come when it's nearly your turn"),
+          const SizedBox(height: 8),
+          OpButton(label: 'Book an OPD visit'.tr, icon: Icons.arrow_forward, onPressed: () => context.go('/find')),
+        ],
       ),
     );
   }

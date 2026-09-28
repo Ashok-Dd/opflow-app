@@ -74,7 +74,7 @@ class _RightDoctorCardState extends ConsumerState<RightDoctorCard> {
             Text('Not sure whom to consult?'.tr, style: OpText.heading.copyWith(fontSize: 21)),
             const SizedBox(height: 6),
             Text(
-              'Tell OPflow the type of doctor you need. We suggest doctors near you, based on their qualifications, experience, training, practice areas and patient feedback.'.tr,
+              'Tell OPflow which type of doctor you want to consult. We will suggest the right doctor(s) near you, based on their qualifications, experience, training, areas of practice and patient feedback.'.tr,
               style: OpText.body.copyWith(color: OpColors.inkSoft),
             ),
             const SizedBox(height: 14),
@@ -169,7 +169,7 @@ class _PickOfferScreenState extends ConsumerState<PickOfferScreen> {
       showError(context, 'The payment did not go through. No money was taken. Please try again.'.tr);
       return;
     }
-    context.pushReplacement('/right-doctor/result/${result!.id}');
+    context.pushReplacement('/right-doctor/result/${result!.id}?fresh=1');
   }
 
   @override
@@ -281,10 +281,13 @@ class _PickOfferScreenState extends ConsumerState<PickOfferScreen> {
 // 3. "Your OPflow Recommendation"
 
 class PickResultScreen extends ConsumerStatefulWidget {
-  const PickResultScreen({super.key, required this.id, this.initial});
+  const PickResultScreen({super.key, required this.id, this.initial, this.backHome = false});
 
   final String id;
   final PickResult? initial;
+
+  /// Opened right after paying: the back arrow goes to Home (not back to the payment screen).
+  final bool backHome;
 
   @override
   ConsumerState<PickResultScreen> createState() => _PickResultScreenState();
@@ -319,6 +322,7 @@ class _PickResultScreenState extends ConsumerState<PickResultScreen> {
     final r = _r;
     return OpPage(
       title: 'Your OPflow Recommendation'.tr,
+      onBack: widget.backHome ? () => context.go('/home') : null,
       body: _error != null
           ? EmptyState(icon: Icons.wifi_off, title: 'Could not load'.tr, text: friendlyMessage(_error!), action: 'Try again'.tr, onAction: _load)
           : r == null
@@ -380,8 +384,22 @@ class _PickDoctorBlock extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('SUGGESTION {0}'.trf([n]), style: OpText.label.copyWith(color: OpColors.forest, letterSpacing: 1.6)),
-        const SizedBox(height: 6),
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(color: OpColors.forest, borderRadius: OpRadius.smallAll),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                const Icon(Icons.verified_outlined, size: 14, color: OpColors.paper),
+                const SizedBox(width: 5),
+                Text('OPflow recommended'.tr, style: OpText.smallStrong.copyWith(color: OpColors.paper, fontSize: 12)),
+              ]),
+            ),
+            const SizedBox(width: 8),
+            Text('SUGGESTION {0}'.trf([n]), style: OpText.label.copyWith(color: OpColors.forest, letterSpacing: 1.6)),
+          ],
+        ),
+        const SizedBox(height: 8),
         DoctorCard(doctor: d, onTap: () => context.push('/doctor/${d.id}'), onBook: () => context.push('/book/${d.id}')),
         if (p.reasons.isNotEmpty)
           Container(
@@ -523,7 +541,7 @@ class _PickReturnScreenState extends ConsumerState<PickReturnScreen> {
   @override
   Widget build(BuildContext context) {
     final r = _r;
-    if (_done && r != null) return OpPage(title: 'Your OPflow Recommendation'.tr, body: PickResultView(result: r));
+    if (_done && r != null) return OpPage(title: 'Your OPflow Recommendation'.tr, onBack: () => context.go('/home'), body: PickResultView(result: r));
     return OpPage(
       title: 'Find Your Right Doctor'.tr,
       body: !_done
