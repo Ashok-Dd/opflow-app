@@ -59,6 +59,7 @@ class ApiPatientStore extends PatientStore {
     if (s.side == _side) return;
     _side = s.side;
     bookings.clear();
+    _bookingsLoaded = false;
     messages.clear();
     live.clear();
     if (s.side != Side.patient) LiveSocket.instance.close();
@@ -70,6 +71,10 @@ class ApiPatientStore extends PatientStore {
   }
   Timer? _poll;
   bool loading = false;
+  bool _bookingsLoaded = false;
+
+  @override
+  bool get bookingsLoaded => _bookingsLoaded;
 
   @override
   bool get isLoading => loading;
@@ -89,6 +94,9 @@ class ApiPatientStore extends PatientStore {
           for (final b in [...(up['items'] as List), ...(past['items'] as List)].cast<Map>())
             if (_visible(b)) _booking(Map<String, dynamic>.from(b)),
         ]);
+      // Home can show the next visit now; messages and settings follow.
+      _bookingsLoaded = true;
+      notifyListeners();
       await _loadMessages();
       final prefs = await _api.get('/v1/me/notification-prefs') as Map;
       remindMe = prefs['reminders'] != false;
@@ -99,6 +107,8 @@ class ApiPatientStore extends PatientStore {
       // Shown as "could not load" by screens that care; the app keeps working with what it has.
     } finally {
       loading = false;
+      // Tried once: never a loader forever (with no internet, Home says "no visit" and pull-to-refresh tries again).
+      _bookingsLoaded = true;
       notifyListeners();
     }
   }

@@ -1082,4 +1082,5 @@ const te = <String, String>{
   'Get your token before you leave home': 'ఇంటి నుండి బయలుదేరే ముందే మీ టోకెన్ పొందండి',
   'Watch the live line and come when it\'s nearly your turn': 'లైవ్ క్యూ చూసి, మీ వంతు దగ్గర పడినప్పుడు రండి',
   'Book an OPD visit': 'OPD విజిట్ బుక్ చేయండి',
+  'Loading your visits…': 'మీ విజిట్‌లు లోడ్ అవుతున్నాయి…',
 };

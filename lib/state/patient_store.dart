@@ -90,6 +90,9 @@ class PatientStore extends ChangeNotifier {
 
   Booking? get nextVisit => upcoming.firstOrNull;
 
+  /// The bookings have come from the server at least once (until then Home shows a loader, not "no visit").
+  bool get bookingsLoaded => true;
+
   int get unread => messages.where((m) => m.unread).length;
 
   /// More old bookings / messages exist on the server (loaded as the list is scrolled). Mock: never.

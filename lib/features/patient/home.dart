@@ -18,6 +18,7 @@ import '../../widgets/doctor_card.dart';
 import 'picks/picks_screens.dart';
 import '../../widgets/doctor_portrait.dart';
 import '../../widgets/op_button.dart';
+import '../../widgets/op_loader.dart';
 import '../../widgets/page_header.dart';
 import 'find/find.dart' show HospitalFacade;
 import 'widgets.dart';
@@ -145,7 +146,7 @@ class HomeTab extends ConsumerWidget {
             const SizedBox(height: 32),
           ] else ...[
             const SectionLabel('Your next visit'),
-            const _NoVisitCard().staggerIn(3),
+            if (store.bookingsLoaded) const _NoVisitCard().staggerIn(3) else const OpLoadingPanel(text: 'Loading your visits…', height: 170),
             const SizedBox(height: 32),
           ],
 
