@@ -74,14 +74,14 @@ class _RightDoctorCardState extends ConsumerState<RightDoctorCard> {
             Text('Not sure whom to consult?'.tr, style: OpText.heading.copyWith(fontSize: 21)),
             const SizedBox(height: 6),
             Text(
-              'Tell OPflow which type of doctor you want to consult. We will suggest the right doctor(s) near you, based on their qualifications, experience, training, areas of practice and patient feedback.'.tr,
+              'Tell OPflow which type of doctor you want to consult. We will suggest the best doctors near you, based on their qualifications, experience, training, areas of practice and patient feedback.'.tr,
               style: OpText.body.copyWith(color: OpColors.inkSoft),
             ),
             const SizedBox(height: 14),
             Row(
               children: [
                 Expanded(
-                  child: Text('{0} · Personalized recommendation'.trf([info.priceText]),
+                  child: Text('Recommended by OPflow · {0} only'.trf([info.priceText]),
                       style: OpText.smallStrong.copyWith(color: OpColors.ink, fontSize: 13.5)),
                 ),
                 OpButton(label: 'Find My Doctor'.tr, icon: Icons.arrow_forward, expand: false, height: 42, onPressed: () => context.push('/right-doctor')),
@@ -263,7 +263,7 @@ class _PickOfferScreenState extends ConsumerState<PickOfferScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('{0} · Personalized recommendation'.trf([o.priceText]), style: OpText.smallStrong),
+                  Text('Recommended by OPflow · {0} only'.trf([o.priceText]), style: OpText.smallStrong),
                   const SizedBox(height: 8),
                   OpButton(
                     label: 'Pay {0} · See my doctors'.trf([o.priceText]),
