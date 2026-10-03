@@ -1023,6 +1023,11 @@ class _DoctorDevicesScreenState extends ConsumerState<DoctorDevicesScreen> {
                   padding: const EdgeInsets.all(OpSpace.gutter),
                   children: [
                     Text('Up to {0} phones and {1} computer at a time.'.trf([_max, _maxWeb]), style: OpText.body.copyWith(color: OpColors.inkSoft)),
+                    const SizedBox(height: 4),
+                    Text(
+                      'In use now: {0} of {1} phones, {2} of {3} computer.'.trf([list.where((x) => !x.web).length, _max, list.where((x) => x.web).length, _maxWeb]),
+                      style: OpText.body.copyWith(color: OpColors.inkSoft),
+                    ),
                     const SizedBox(height: 14),
                     MenuGroup(children: [
                       for (final d in list)

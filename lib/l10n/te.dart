@@ -1028,6 +1028,7 @@ const te = <String, String>{
   'Signing out…': 'సైన్ అవుట్ చేస్తున్నాం…',
   'Signed out': 'సైన్ అవుట్ అయింది',
   'Up to {0} phones and {1} computer at a time.': 'ఒకేసారి {0} ఫోన్లు, {1} కంప్యూటర్ వరకు.',
+  'In use now: {0} of {1} phones, {2} of {3} computer.': 'ఇప్పుడు వాడుకలో: {0}/{1} ఫోన్లు, {2}/{3} కంప్యూటర్.',
   'This one': 'ఇదే',
   'Last used {0}': 'చివరిగా వాడింది {0}',
   'New phone refused? Sign out an old phone here, then log in on the new one.': 'కొత్త ఫోన్‌లో లాగిన్ కాలేదా? ఇక్కడ పాత ఫోన్ నుండి సైన్ అవుట్ చేసి, కొత్త ఫోన్‌లో లాగిన్ అవ్వండి.',
