@@ -240,7 +240,7 @@ class ApiDoctorStore extends DoctorStore {
       name: (e['name'] as String?) ?? 'Patient',
       age: ((e['age'] as num?) ?? 0).toInt(),
       gender: e['gender'] == null ? '' : '${(e['gender'] as String)[0].toUpperCase()}${(e['gender'] as String).substring(1)}',
-      phone: '',
+      phone: (e['phone'] as String?) ?? '',
       source: e['emergency'] == true ? Source.emergency : Source.online,
       hour: startsAt != null ? Remote.istHour(startsAt) : DateTime.now().hour,
       date: day,

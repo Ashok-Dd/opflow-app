@@ -74,12 +74,12 @@ class DoctorBookingDetail extends ConsumerWidget {
                 children: [
                   const Icon(Icons.call_outlined, color: OpColors.fern),
                   const SizedBox(width: 10),
-                  Expanded(child: Text(maskPhone(p.phone), style: OpText.mono(18, weight: FontWeight.w600))),
+                  Expanded(child: Text(p.phone, style: OpText.mono(18, weight: FontWeight.w600))),
                   OpButton(
                     label: 'Call'.tr,
                     expand: false,
                     height: 44,
-                    onPressed: () => showCallSheet(context, name: p.name, phone: maskPhone(p.phone)),
+                    onPressed: () => showCallSheet(context, name: p.name, phone: p.phone),
                   ),
                 ],
               ),

@@ -411,6 +411,7 @@ class _BookingRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(p.name, style: OpText.bodyStrong.copyWith(fontSize: 15)),
+                if (p.phone.isNotEmpty) Text(p.phone, style: OpText.mono(12.5)),
                 Text('${p.age} yrs · ${p.gender} · ${p.source.label}${p.changed ? ' · Changed' : ''}', style: OpText.small.copyWith(fontSize: 12.5)),
               ],
             ),
