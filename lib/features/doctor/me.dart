@@ -14,6 +14,7 @@ import '../../theme/text.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/bits.dart';
 import '../../widgets/language.dart';
+import '../../widgets/crop_photo.dart';
 import '../../widgets/doctor_card.dart';
 import '../../widgets/doctor_portrait.dart';
 import '../../widgets/op_button.dart';
@@ -238,7 +239,11 @@ class _DoctorProfileScreenState extends ConsumerState<DoctorProfileScreen> {
         imageQuality: 88,
       );
       if (picked == null || !mounted) return;
-      final path = await ref.read(directoryProvider).keepPhoto(picked, _d.id);
+      final original = await picked.readAsBytes();
+      if (!mounted) return;
+      final cropped = await cropPhoto(context, original);
+      if (cropped == null || !mounted) return;
+      final path = await ref.read(directoryProvider).keepPhotoBytes(cropped, _d.id);
       _set(_d.copyWith(photoPath: path));
     } catch (_) {
       if (mounted) {

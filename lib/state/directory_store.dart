@@ -110,12 +110,22 @@ class DirectoryStore extends ChangeNotifier {
 
   /// Straight to storage with a 5-minute link (the photo never passes through the API server).
   Future<String> _uploadPhoto(String path) async {
-    final link = Map<String, dynamic>.from(await Api.instance.post('/v1/doctor/me/photo/upload-url', {'contentType': 'image/jpeg'}) as Map);
-    final bytes = kIsWeb ? await XFile(path).readAsBytes() : await File(path).readAsBytes();
-    final headers = Map<String, String>.from((link['headers'] as Map?) ?? const {'content-type': 'image/jpeg'});
+    final Uint8List bytes = path.startsWith('data:') ? UriData.parse(path).contentAsBytes() : (kIsWeb ? await XFile(path).readAsBytes() : await File(path).readAsBytes());
+    final type = path.startsWith('data:image/png') || path.endsWith('.png') ? 'image/png' : 'image/jpeg';
+    final link = Map<String, dynamic>.from(await Api.instance.post('/v1/doctor/me/photo/upload-url', {'contentType': type}) as Map);
+    final headers = Map<String, String>.from((link['headers'] as Map?) ?? {'content-type': type});
     final res = await http.put(Uri.parse(link['url'] as String), headers: headers, body: bytes).timeout(const Duration(seconds: 60));
     if (res.statusCode >= 300) throw ApiException('UPLOAD_FAILED', 'The photo could not be uploaded. Please try again.', retryable: true);
     return link['key'] as String;
+  }
+
+  /// Keeps the cropped photo (PNG bytes) in the app's own folder; on the web the bytes live in a data address.
+  Future<String> keepPhotoBytes(Uint8List bytes, String doctorId) async {
+    if (kIsWeb) return Uri.dataFromBytes(bytes, mimeType: 'image/png').toString();
+    final dir = await getApplicationDocumentsDirectory();
+    final path = '${dir.path}/doctor_${doctorId}_${DateTime.now().millisecondsSinceEpoch}.png';
+    await File(path).writeAsBytes(bytes);
+    return path;
   }
 
   /// Copies a picked photo into the app's own folder, so it stays after the gallery changes.
