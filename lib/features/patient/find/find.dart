@@ -342,6 +342,9 @@ class HospitalFacade extends StatelessWidget {
           : Image.network(
               url,
               fit: BoxFit.cover,
+              // The web build may not draw pictures from another address (no CORS on the storage); then the
+              // browser's own image element is used.
+              webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
               width: double.infinity,
               height: double.infinity,
               // While it loads, or if it cannot load, the drawn building shows instead of an empty box.

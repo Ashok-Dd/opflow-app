@@ -45,7 +45,7 @@ class DoctorPortrait extends StatelessWidget {
                 color: OpColors.mint,
               ),
               child: doctor.photoUrl != null && photo == null
-                  ? Image.network(doctor.photoUrl!, fit: BoxFit.cover, errorBuilder: (_, _, _) => _Monogram(doctor: doctor, band: band))
+                  ? Image.network(doctor.photoUrl!, fit: BoxFit.cover, webHtmlElementStrategy: WebHtmlElementStrategy.fallback, errorBuilder: (_, _, _) => _Monogram(doctor: doctor, band: band))
                   : photo != null
                   ? (kIsWeb
                       ? Image.network(photo, fit: BoxFit.cover, errorBuilder: (_, _, _) => _Monogram(doctor: doctor, band: band))
