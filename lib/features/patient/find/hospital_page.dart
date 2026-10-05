@@ -25,7 +25,7 @@ class HospitalPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(OpSpace.gutter, 20, OpSpace.gutter, 28),
         children: [
-          HospitalFacade(h: h, height: 150).staggerIn(0),
+          HospitalFacade(h: h, wide: true).staggerIn(0),
           const SizedBox(height: 20),
           Text(h.name, style: OpText.display.copyWith(fontSize: 30)).staggerIn(1),
           const SizedBox(height: 4),

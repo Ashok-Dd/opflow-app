@@ -201,12 +201,12 @@ class HomeTab extends ConsumerWidget {
           // Hospitals near you
           const SectionLabel('Hospitals near you'),
           DirectoryGate(
-            height: 96 + scale.scale(44),
+            height: 142 + 106 + scale.scale(40),
             text: 'Finding hospitals near you…',
             builder: (context) {
               final hospitals = [...MockData.hospitals]..sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
               return SizedBox(
-                height: 96 + scale.scale(44),
+                height: 142 + 106 + scale.scale(40),
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   clipBehavior: Clip.none,
@@ -254,11 +254,11 @@ class _HospitalTile extends StatelessWidget {
         width: 250,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(color: OpColors.card, borderRadius: OpRadius.cardAll, border: Border.all(color: OpColors.line, width: 1.2)),
-        child: Row(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // The hospital's front, as a narrow strip on the left (no empty band under the words).
-            SizedBox(width: 72, child: HospitalFacade(h: h, height: double.infinity, radius: false)),
+            // The hospital's picture across the top, wide (16:9), with the words under it.
+            HospitalFacade(h: h, wide: true, radius: false),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),

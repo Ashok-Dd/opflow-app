@@ -281,7 +281,7 @@ class HospitalRow extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          HospitalFacade(h: h, height: 96, radius: false),
+          HospitalFacade(h: h, wide: true, radius: false),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
             child: Column(
@@ -315,26 +315,41 @@ class HospitalRow extends StatelessWidget {
   }
 }
 
-/// A drawn hospital front (stands in for a photo): roof line, window rows, a door, and a red cross
-/// sign when the hospital has emergency care.
+/// The hospital's picture. The admin's photo when there is one (landscape 16:9, cropped to fill); until then a
+/// drawn front: roof line, window rows, a door, and a red cross sign when the hospital has emergency care.
+/// `wide` makes it a 16:9 picture as wide as its parent; otherwise it is `height` tall.
 class HospitalFacade extends StatelessWidget {
-  const HospitalFacade({super.key, required this.h, this.height = 80, this.radius = true});
+  const HospitalFacade({super.key, required this.h, this.height = 80, this.radius = true, this.wide = false});
 
   final Hospital h;
   final double height;
   final bool radius;
+  final bool wide;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: height,
+    final drawn = CustomPaint(painter: _FacadePainter(seed: h.id.hashCode, emergency: h.hasEmergency, label: h.initials));
+    final url = h.photoUrl;
+    final box = Container(
+      height: wide ? null : height,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: OpColors.mint,
         borderRadius: radius ? BorderRadius.circular(OpRadius.control) : null,
       ),
-      child: CustomPaint(painter: _FacadePainter(seed: h.id.hashCode, emergency: h.hasEmergency, label: h.initials)),
+      child: url == null
+          ? drawn
+          : Image.network(
+              url,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+              // While it loads, or if it cannot load, the drawn building shows instead of an empty box.
+              loadingBuilder: (context, child, progress) => progress == null ? child : drawn,
+              errorBuilder: (_, _, _) => drawn,
+            ),
     );
+    return wide ? AspectRatio(aspectRatio: 16 / 9, child: box) : box;
   }
 }
 

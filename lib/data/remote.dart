@@ -252,6 +252,7 @@ class Remote extends ChangeNotifier {
         typeIds: ((h['departments'] as List?) ?? const []).cast<String>(),
         lat: ((h['location'] as Map?)?['lat'] as num?)?.toDouble(),
         lng: ((h['location'] as Map?)?['lng'] as num?)?.toDouble(),
+        photoUrl: (h['photo'] as Map?)?['m'] as String?,
       );
 
   static Doctor doctorFrom(Map<String, dynamic> c) {

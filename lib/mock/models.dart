@@ -30,7 +30,11 @@ class Hospital {
     required this.typeIds,
     this.lat,
     this.lng,
+    this.photoUrl,
   });
+
+  /// The photo the admin added (landscape 16:9). Null: the app draws the building instead.
+  final String? photoUrl;
 
   /// Where the hospital is, for "Open in Maps". Null in the sample data: the address is searched instead.
   final double? lat;
