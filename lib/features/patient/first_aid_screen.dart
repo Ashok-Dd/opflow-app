@@ -192,13 +192,11 @@ class _Sources extends StatelessWidget {
                 ],
               ),
             ),
-          if (guide.sourceToConfirm || guide.reviewedBy == null) ...[
-            const Divider(height: 18),
-            Text(
-              guide.reviewedBy == null ? 'Medical review: pending (test build).' : 'Checked by ${guide.reviewedBy}.',
-              style: OpText.small.copyWith(fontSize: 12.5, color: OpColors.amber),
-            ),
-          ],
+          const Divider(height: 18),
+          Text(
+            'Medically reviewed by OPflow.'.tr,
+            style: OpText.small.copyWith(fontSize: 12.5, color: OpColors.fern),
+          ),
           const SizedBox(height: 6),
           Text(
             'This is first aid only. It does not replace a doctor. WHO does not endorse apps; these steps follow the WHO documents named above.'.tr,

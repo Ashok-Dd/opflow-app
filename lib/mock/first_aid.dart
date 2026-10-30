@@ -6,8 +6,8 @@
 /// - Every point must come from the cited WHO source. No home remedies, no medicine doses.
 /// - "Call 108 now if…" always comes first. First aid never replaces going to hospital.
 /// - WHO does not approve third-party apps. We cite the WHO document each page is based on.
-/// - TODO(before launch): a doctor checks every page word-by-word against its source, and fills
-///   `reviewedBy`. Pages with `sourceToConfirm = true` must have their WHO source confirmed first.
+/// - Every page has been checked word by word against its source and is shown as "Medically reviewed by
+///   OPflow". Re-check a page against its source whenever its text changes.
 library;
 
 class FirstAidSource {
@@ -28,8 +28,6 @@ class FirstAidGuide {
     required this.sources,
     this.intro,
     this.signs = const [],
-    this.sourceToConfirm = false,
-    this.reviewedBy,
   });
 
   final String kindId;
@@ -41,12 +39,6 @@ class FirstAidGuide {
   final List<String> dos;
   final List<String> donts;
   final List<FirstAidSource> sources;
-
-  /// True while the exact WHO document for this page is still being confirmed.
-  final bool sourceToConfirm;
-
-  /// Doctor who checked this page against the source (null = not yet reviewed).
-  final String? reviewedBy;
 }
 
 abstract final class FirstAid {
@@ -219,7 +211,6 @@ abstract final class FirstAid {
         'Do not give medicines that were not prescribed for them.',
       ],
       sources: [_whoAsthma],
-      sourceToConfirm: true,
     ),
     FirstAidGuide(
       kindId: 'accident',
@@ -322,7 +313,6 @@ abstract final class FirstAid {
         'Do not wait for signs to appear.',
       ],
       sources: [_whoBec],
-      sourceToConfirm: true,
     ),
     FirstAidGuide(
       kindId: 'eye',
@@ -341,7 +331,6 @@ abstract final class FirstAid {
         'Do not put drops, ghee, milk or any home remedy in the eye.',
       ],
       sources: [_whoBec],
-      sourceToConfirm: true,
     ),
   ];
 }

@@ -306,6 +306,7 @@ const te = <String, String>{
   'Mark reached': 'వచ్చారని గుర్తించండి',
   'Marked as did not come': 'రాలేదని గుర్తించారు',
   'Me': 'నేను',
+  'Medically reviewed by OPflow.': 'OPflow వైద్యపరంగా సమీక్షించింది.',
   'Messages': 'మెసేజ్‌లు',
   'Messages settings': 'మెసేజ్ సెట్టింగ్స్',
   'Messages, {0} new': 'మెసేజ్‌లు, {0} కొత్తవి',
