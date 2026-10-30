@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 ///
 ///   flutter run                                   → mock data (no server; demos and widget tests)
 ///   flutter run --dart-define=BACKEND=api         → the OPflow API at [AppConfig.devServer]
-///   flutter run --dart-define=BACKEND=api --dart-define=API_BASE_URL=https://opflow-api.onrender.com
+///   flutter run --dart-define=BACKEND=api --dart-define=API_BASE_URL=https://backend.opflow.in
 ///                                                 → another server, just for this build
 class AppConfig {
   AppConfig._();
@@ -17,8 +17,8 @@ class AppConfig {
   /// (The web version uses localhost. The Android emulator: use http://10.0.2.2:3000.)
   static const devServer = 'http://10.249.28.154:3000';
 
-  /// The live test server on Render. Build with it: --dart-define=API_BASE_URL=https://opflow-backend.onrender.com
-  static const renderServer = 'https://opflow-backend.onrender.com';
+  /// The live server on Render, served at backend.opflow.in. Build with it: --dart-define=API_BASE_URL=https://backend.opflow.in
+  static const renderServer = 'https://backend.opflow.in';
 
   /// The app's own version, sent with every request (old apps are asked to update).
   static const appVersion = '1.1.0';
